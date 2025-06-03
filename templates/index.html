@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="inicio" class="relative bg-gradient-to-r from-rescue-blue-600 to-rescue-blue-800 text-white py-20">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in-up">
+                Transforme a Vida de um Cão Hoje!
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+                Ajude a salvar vidas e proporcionar um lar para cães abandonados. 
+                Cada adoção é uma segunda chance para a felicidade.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style="animation-delay: 0.4s;">
+                <a href="#adocoes" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-paw mr-2"></i>Veja nossos cães para adoção
+                </a>
+                <a href="#sobre" class="border-2 border-white hover:bg-white hover:text-rescue-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300">
+                    <i class="fas fa-heart mr-2"></i>Conheça nossa missão
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="relative mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
+                    <div class="text-3xl font-bold mb-2">{{ total_dogs_rescued }}</div>
+                    <div class="text-lg">Cães Resgatados</div>
+                </div>
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
+                    <div class="text-3xl font-bold mb-2">{{ total_adoptions }}</div>
+                    <div class="text-lg">Adoções Realizadas</div>
+                </div>
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
+                    <div class="text-3xl font-bold mb-2">{{ available_dogs }}</div>
+                    <div class="text-lg">Esperando um Lar</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="sobre" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Sobre Nossa Missão</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Somos uma organização dedicada ao resgate, cuidado e reabilitação de cães abandonados, 
+                conectando-os com famílias amorosas.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <img src="https://pixabay.com/get/g7337ca00406f539bbcd04ab4dd995dfbf3eee2cacb21760529fedca213f1958747e7558fa69a11b4db4eeea7fd7df07bfec8c168e05ad0a965d78fadbc046698_1280.jpg" 
+                     alt="Voluntários com cães" 
+                     class="rounded-lg shadow-lg w-full h-96 object-cover">
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Nossa História</h3>
+                <p class="text-gray-600 mb-6">
+                    Fundada em 2015, nossa ONG nasceu da paixão por salvar vidas e dar uma segunda chance 
+                    para cães que foram abandonados ou maltratados. Com uma equipe dedicada de voluntários 
+                    e veterinários, trabalhamos incansavelmente para resgatar, tratar e preparar cada animal 
+                    para encontrar sua família para sempre.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="flex items-start">
+                        <div class="bg-rescue-blue-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-heart text-rescue-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Cuidado Integral</h4>
+                            <p class="text-gray-600">Tratamento veterinário completo e reabilitação</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-rescue-green-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-home text-rescue-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Lares Amorosos</h4>
+                            <p class="text-gray-600">Conexão responsável com famílias adequadas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dogs Available Section -->
+<section id="adocoes" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Cães Disponíveis para Adoção</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Conheça nossos queridos amigos que estão procurando por uma família. 
+                Cada um tem sua própria personalidade e muito amor para oferecer.
+            </p>
+        </div>
+        
+        {% if featured_dogs %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for dog in featured_dogs %}
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 dog-card">
+                        <div class="relative">
+                            {% if dog.photo_url %}
+                                <img src="{{ dog.photo_url }}" alt="{{ dog.name }}" class="w-full h-64 object-cover">
+                            {% else %}
+                                <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-dog text-gray-400 text-4xl"></i>
+                                </div>
+                            {% endif %}
+                            {% if dog.is_featured %}
+                                <div class="absolute top-4 left-4 bg-rescue-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-star mr-1"></i>Destaque
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">{{ dog.name }}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                                    {{ dog.age_display }}
+                                </span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+                                    {{ dog.get_gender_display }}
+                                </span>
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">
+                                    Porte {{ dog.get_size_display }}
+                                </span>
+                            </div>
+                            <p class="text-gray-600 mb-4 line-clamp-3">{{ dog.description|truncatewords:20 }}</p>
+                            <button onclick="openAdoptionModal('{{ dog.id }}', '{{ dog.name }}')" 
+                                    class="w-full bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white py-2 px-4 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-heart mr-2"></i>Adote-me
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-paw text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum cão disponível no momento</h3>
+                <p class="text-gray-500">Novos amigos chegam em breve! Inscreva-se em nossa newsletter para ser notificado.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Histórias de Sucesso</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Veja como nossas adoções transformaram vidas - tanto dos cães quanto de suas novas famílias.
+            </p>
+        </div>
+        
+        {% if testimonials %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for testimonial in testimonials %}
+                    <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                        <div class="flex items-center mb-4">
+                            {% if testimonial.photo_after_url %}
+                                <img src="{{ testimonial.photo_after_url }}" alt="{{ testimonial.dog_name }}" class="w-16 h-16 rounded-full object-cover mr-4">
+                            {% else %}
+                                <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-dog text-gray-400"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h4 class="font-semibold text-gray-800">{{ testimonial.adopter_name }}</h4>
+                                <p class="text-gray-600 text-sm">Adotou {{ testimonial.dog_name }}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"{{ testimonial.testimonial|truncatewords:30 }}"</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-comments text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Em breve, histórias incríveis</h3>
+                <p class="text-gray-500">Nossos primeiros depoimentos de adoção estão chegando!</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- How to Help Section -->
+<section id="voluntarios" class="py-20 bg-rescue-green-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Como Você Pode Ajudar</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Existem várias maneiras de fazer a diferença na vida dos nossos cães. 
+                Cada contribuição, por menor que seja, tem um impacto real.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Volunteer -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="bg-rescue-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-hands-helping text-rescue-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Seja Voluntário</h3>
+                <p class="text-gray-600 mb-6">
+                    Doe seu tempo e ajude no cuidado diário dos cães, eventos de adoção e atividades da ONG.
+                </p>
+                <button onclick="openVolunteerModal()" class="bg-rescue-green-500 hover:bg-rescue-green-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors">
+                    Quero ser Voluntário
+                </button>
+            </div>
+            
+            <!-- Donate -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="bg-rescue-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-donate text-rescue-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Faça uma Doação</h3>
+                <p class="text-gray-600 mb-6">
+                    Contribua financeiramente para custos veterinários, alimentação e cuidados especiais.
+                </p>
+                <a href="#" class="inline-block bg-rescue-blue-500 hover:bg-rescue-blue-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors">
+                    Fazer Doação
+                </a>
+            </div>
+            
+            <!-- Share -->
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="bg-rescue-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-share-alt text-rescue-orange-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Divulgue Nossa Causa</h3>
+                <p class="text-gray-600 mb-6">
+                    Compartilhe nossas redes sociais e ajude a encontrar lares para nossos cães.
+                </p>
+                <div class="flex justify-center space-x-4">
+                    <a href="#" class="text-rescue-orange-500 hover:text-rescue-orange-600 transition-colors">
+                        <i class="fab fa-facebook text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-rescue-orange-500 hover:text-rescue-orange-600 transition-colors">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-rescue-orange-500 hover:text-rescue-orange-600 transition-colors">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contato" class="py-20 bg-gray-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Entre em Contato</h2>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Tem dúvidas sobre adoção ou quer saber mais sobre nosso trabalho? 
+                Estamos aqui para ajudar!
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Contact Info -->
+            <div>
+                <h3 class="text-2xl font-bold mb-6">Informações de Contato</h3>
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="bg-rescue-orange-500 p-3 rounded-lg mr-4">
+                            <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Localização</h4>
+                            <p class="text-gray-300">Rua dos Animais, 123<br>São Paulo, SP - CEP 01000-000</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-rescue-orange-500 p-3 rounded-lg mr-4">
+                            <i class="fas fa-phone text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Telefone</h4>
+                            <p class="text-gray-300">(11) 99999-9999</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-rescue-orange-500 p-3 rounded-lg mr-4">
+                            <i class="fas fa-envelope text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Email</h4>
+                            <p class="text-gray-300">contato@ongresgatecaes.org</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-rescue-orange-500 p-3 rounded-lg mr-4">
+                            <i class="fas fa-clock text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Horário de Funcionamento</h4>
+                            <p class="text-gray-300">Segunda a Sábado: 8h às 17h<br>Domingo: 9h às 15h</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div>
+                <h3 class="text-2xl font-bold mb-6">Envie uma Mensagem</h3>
+                <form method="post" action="{% url 'contact_message' %}" class="space-y-6">
+                    {% csrf_token %}
+                    <div>
+                        <label for="{{ contact_form.name.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            {{ contact_form.name.label }}
+                        </label>
+                        {{ contact_form.name }}
+                    </div>
+                    <div>
+                        <label for="{{ contact_form.email.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            {{ contact_form.email.label }}
+                        </label>
+                        {{ contact_form.email }}
+                    </div>
+                    <div>
+                        <label for="{{ contact_form.subject.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            {{ contact_form.subject.label }}
+                        </label>
+                        {{ contact_form.subject }}
+                    </div>
+                    <div>
+                        <label for="{{ contact_form.message.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            {{ contact_form.message.label }}
+                        </label>
+                        {{ contact_form.message }}
+                    </div>
+                    <button type="submit" class="w-full bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar Mensagem
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Newsletter -->
+        <div class="mt-16 bg-rescue-blue-900 rounded-lg p-8 text-center">
+            <h3 class="text-2xl font-bold mb-4">Receba Nossas Novidades</h3>
+            <p class="text-gray-300 mb-6">Inscreva-se em nossa newsletter e seja o primeiro a saber sobre novos resgates e oportunidades de adoção.</p>
+            <form method="post" action="{% url 'newsletter_subscription' %}" class="max-w-md mx-auto">
+                {% csrf_token %}
+                <div class="flex">
+                    {{ newsletter_form.email }}
+                    <button type="submit" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-6 py-2 rounded-r-lg font-semibold transition-colors">
+                        Inscrever
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Adoption Modal -->
+<div id="adoptionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Solicitação de Adoção</h3>
+                <button onclick="closeAdoptionModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-gray-600">Você está interessado em adotar: <span id="selectedDogName" class="font-semibold text-rescue-blue-600"></span></p>
+            </div>
+            
+            <form id="adoptionForm" method="post" action="{% url 'adoption_inquiry' %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" id="dogId" name="dog_id" value="">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ adoption_form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ adoption_form.name.label }}
+                        </label>
+                        {{ adoption_form.name }}
+                    </div>
+                    <div>
+                        <label for="{{ adoption_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ adoption_form.email.label }}
+                        </label>
+                        {{ adoption_form.email }}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ adoption_form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ adoption_form.phone.label }}
+                        </label>
+                        {{ adoption_form.phone }}
+                    </div>
+                    <div class="flex items-center">
+                        {{ adoption_form.has_experience }}
+                        <label for="{{ adoption_form.has_experience.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            {{ adoption_form.has_experience.label }}
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ adoption_form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ adoption_form.address.label }}
+                    </label>
+                    {{ adoption_form.address }}
+                </div>
+                
+                <div>
+                    <label for="{{ adoption_form.living_situation.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ adoption_form.living_situation.label }}
+                    </label>
+                    {{ adoption_form.living_situation }}
+                </div>
+                
+                <div>
+                    <label for="{{ adoption_form.motivation.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ adoption_form.motivation.label }}
+                    </label>
+                    {{ adoption_form.motivation }}
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-heart mr-2"></i>Enviar Solicitação
+                    </button>
+                    <button type="button" onclick="closeAdoptionModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Volunteer Modal -->
+<div id="volunteerModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Inscrição para Voluntário</h3>
+                <button onclick="closeVolunteerModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form method="post" action="{% url 'volunteer_application' %}" class="space-y-4">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ volunteer_form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ volunteer_form.name.label }}
+                        </label>
+                        {{ volunteer_form.name }}
+                    </div>
+                    <div>
+                        <label for="{{ volunteer_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ volunteer_form.email.label }}
+                        </label>
+                        {{ volunteer_form.email }}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ volunteer_form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ volunteer_form.phone.label }}
+                        </label>
+                        {{ volunteer_form.phone }}
+                    </div>
+                    <div>
+                        <label for="{{ volunteer_form.age.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ volunteer_form.age.label }}
+                        </label>
+                        {{ volunteer_form.age }}
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ volunteer_form.availability.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ volunteer_form.availability.label }}
+                    </label>
+                    {{ volunteer_form.availability }}
+                </div>
+                
+                <div>
+                    <label for="{{ volunteer_form.skills.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ volunteer_form.skills.label }}
+                    </label>
+                    {{ volunteer_form.skills }}
+                </div>
+                
+                <div>
+                    <label for="{{ volunteer_form.motivation.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ volunteer_form.motivation.label }}
+                    </label>
+                    {{ volunteer_form.motivation }}
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-rescue-green-500 hover:bg-rescue-green-600 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-hands-helping mr-2"></i>Enviar Inscrição
+                    </button>
+                    <button type="button" onclick="closeVolunteerModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

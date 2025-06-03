@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ONG Resgate de Cães - Transformando Vidas{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'rescue-blue': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        'rescue-orange': {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        },
+                        'rescue-green': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-heart text-rescue-orange-500 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">ONG Resgate de Cães</span>
+                    </div>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#inicio" class="nav-link text-gray-700 hover:text-rescue-blue-600 px-3 py-2 rounded-md text-sm font-medium">Início</a>
+                    <a href="#sobre" class="nav-link text-gray-700 hover:text-rescue-blue-600 px-3 py-2 rounded-md text-sm font-medium">Sobre Nós</a>
+                    <a href="#adocoes" class="nav-link text-gray-700 hover:text-rescue-blue-600 px-3 py-2 rounded-md text-sm font-medium">Adoções</a>
+                    <a href="#voluntarios" class="nav-link text-gray-700 hover:text-rescue-blue-600 px-3 py-2 rounded-md text-sm font-medium">Voluntários</a>
+                    <a href="#contato" class="nav-link text-gray-700 hover:text-rescue-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contato</a>
+                    <a href="#adocoes" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-paw mr-2"></i>Adote um Cão
+                    </a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-rescue-blue-600 focus:outline-none focus:text-rescue-blue-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#inicio" class="nav-link block px-3 py-2 text-gray-700 hover:text-rescue-blue-600 hover:bg-gray-50 rounded-md text-base font-medium">Início</a>
+                <a href="#sobre" class="nav-link block px-3 py-2 text-gray-700 hover:text-rescue-blue-600 hover:bg-gray-50 rounded-md text-base font-medium">Sobre Nós</a>
+                <a href="#adocoes" class="nav-link block px-3 py-2 text-gray-700 hover:text-rescue-blue-600 hover:bg-gray-50 rounded-md text-base font-medium">Adoções</a>
+                <a href="#voluntarios" class="nav-link block px-3 py-2 text-gray-700 hover:text-rescue-blue-600 hover:bg-gray-50 rounded-md text-base font-medium">Voluntários</a>
+                <a href="#contato" class="nav-link block px-3 py-2 text-gray-700 hover:text-rescue-blue-600 hover:bg-gray-50 rounded-md text-base font-medium">Contato</a>
+                <a href="#adocoes" class="block mx-3 mt-4 bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-4 py-2 rounded-lg font-medium text-center transition-colors">
+                    <i class="fas fa-paw mr-2"></i>Adote um Cão
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Messages -->
+    {% if messages %}
+        <div id="messages" class="fixed top-20 right-4 z-50 max-w-md">
+            {% for message in messages %}
+                <div class="mb-2 p-4 rounded-lg shadow-lg {% if message.tags == 'success' %}bg-green-500 text-white{% elif message.tags == 'error' %}bg-red-500 text-white{% elif message.tags == 'info' %}bg-blue-500 text-white{% else %}bg-gray-500 text-white{% endif %} opacity-0 animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <span>{{ message }}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="pt-16">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Mission -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-heart text-rescue-orange-500 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">ONG Resgate de Cães</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Dedicados a resgatar, cuidar e encontrar lares amorosos para cães abandonados. 
+                        Cada vida importa e merece uma segunda chance.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-rescue-orange-500 transition-colors">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-rescue-orange-500 transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-rescue-orange-500 transition-colors">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-rescue-orange-500 transition-colors">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Links Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-gray-300 hover:text-white transition-colors">Início</a></li>
+                        <li><a href="#sobre" class="text-gray-300 hover:text-white transition-colors">Sobre Nós</a></li>
+                        <li><a href="#adocoes" class="text-gray-300 hover:text-white transition-colors">Adoções</a></li>
+                        <li><a href="#voluntarios" class="text-gray-300 hover:text-white transition-colors">Seja Voluntário</a></li>
+                        <li><a href="#contato" class="text-gray-300 hover:text-white transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contato</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>Rua dos Animais, 123<br>São Paulo, SP</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span>(11) 99999-9999</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>contato@ongresgatecaes.org</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Footer -->
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 ONG Resgate de Cães. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,219 @@
+/* Custom CSS for ONG Resgate de Cães */
+
+/* Custom animations */
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Line clamp utility */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Dog card hover effects */
+.dog-card {
+    transition: all 0.3s ease;
+}
+
+.dog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Navigation smooth scroll */
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Form focus styles */
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button hover effects */
+button, .btn {
+    transition: all 0.3s ease;
+}
+
+/* Modal animations */
+#adoptionModal, #volunteerModal {
+    backdrop-filter: blur(4px);
+}
+
+#adoptionModal.show, #volunteerModal.show {
+    animation: fade-in 0.3s ease-out;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Message animations */
+#messages .mb-2 {
+    animation: slide-in 0.3s ease-out;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Hero section background */
+#inicio {
+    background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    position: relative;
+}
+
+#inicio::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://pixabay.com/get/ge57d837d99f13d29f2470ffb6bc7ad8e6db3831b679a28239414af63b7ea56e818ccccc565e0ff42c948bd586f02a3521cc8d90af99f53d33dceb2a0420f02d1_1280.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.2;
+    z-index: 1;
+}
+
+#inicio > div {
+    position: relative;
+    z-index: 2;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .dog-card:hover {
+        transform: none;
+    }
+    
+    .animate-fade-in-up {
+        animation-delay: 0s !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .fixed, nav, footer, #messages, #adoptionModal, #volunteerModal {
+        display: none !important;
+    }
+    
+    .pt-16 {
+        padding-top: 0 !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .bg-gray-50 {
+        background-color: white;
+    }
+    
+    .text-gray-600 {
+        color: #000000;
+    }
+    
+    .border-gray-300 {
+        border-color: #000000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles can be added here in the future */
+}
