@@ -10,6 +10,8 @@ urlpatterns = [
     
     # Admin Dashboard
     path('gestao/', views.admin_dashboard, name='admin_dashboard'),
+    path('gestao/login/', views.admin_login, name='admin_login'),
+    path('gestao/logout/', views.admin_logout, name='admin_logout'),
     
     # API endpoints
     path('admin/api/dashboard/', views.api_dashboard, name='api_dashboard'),

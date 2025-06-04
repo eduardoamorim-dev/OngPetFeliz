@@ -1,14 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count
 import json
 
 from .models import Dog, Testimonial, AdoptionInquiry, VolunteerApplication, ContactMessage
 from .forms import AdoptionInquiryForm, VolunteerApplicationForm, ContactForm
+
+
+def is_admin_user(user):
+    """Check if user is staff/admin"""
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
 
 
 def home(request):
@@ -186,7 +194,53 @@ def adoption_inquiry(request):
         })
 
 
+# Authentication Views
+def admin_login(request):
+    """Admin login view"""
+    if request.user.is_authenticated and is_admin_user(request.user):
+        return redirect('admin_dashboard')
+    
+    error_message = None
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me')
+        
+        if username and password:
+            user = authenticate(request, username=username, password=password)
+            if user is not None and is_admin_user(user):
+                login(request, user)
+                
+                # Set session expiry based on remember me
+                if not remember_me:
+                    request.session.set_expiry(0)  # Session expires when browser closes
+                else:
+                    request.session.set_expiry(1209600)  # 2 weeks
+                
+                next_url = request.GET.get('next', 'admin_dashboard')
+                return redirect(next_url)
+            else:
+                error_message = "Usuário ou senha inválidos, ou você não tem permissão de administrador."
+        else:
+            error_message = "Por favor, preencha todos os campos."
+    
+    context = {
+        'error_message': error_message,
+        'debug': settings.DEBUG
+    }
+    return render(request, 'admin_login.html', context)
+
+
+def admin_logout(request):
+    """Admin logout view"""
+    logout(request)
+    messages.success(request, 'Logout realizado com sucesso.')
+    return redirect('admin_login')
+
+
 # Admin Dashboard Views
+@user_passes_test(is_admin_user, login_url='admin_login')
 def admin_dashboard(request):
     """Admin dashboard view"""
     # Get dashboard stats
@@ -207,6 +261,7 @@ def admin_dashboard(request):
 
 # API Views for Admin Dashboard
 @require_http_methods(["GET"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_dashboard(request):
     """Dashboard statistics API"""
     from django.db.models import Count
@@ -257,6 +312,7 @@ def api_dashboard(request):
 
 
 @require_http_methods(["GET", "POST"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_dogs(request):
     """Dogs API endpoint"""
     if request.method == 'GET':
@@ -287,25 +343,48 @@ def api_dogs(request):
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
+            
+            # Validação de campos obrigatórios
+            required_fields = ['name', 'gender', 'size']
+            for field in required_fields:
+                if not data.get(field):
+                    return JsonResponse({'success': False, 'error': f'Campo {field} é obrigatório'}, status=400)
+            
+            # Validação de tipos e valores
+            age = int(data.get('age', 0)) if data.get('age') else 0
+            age_months = int(data.get('age_months', 0)) if data.get('age_months') else 0
+            
+            if age < 0 or age > 25:
+                return JsonResponse({'success': False, 'error': 'Idade deve estar entre 0 e 25 anos'}, status=400)
+            if age_months < 0 or age_months > 11:
+                return JsonResponse({'success': False, 'error': 'Meses deve estar entre 0 e 11'}, status=400)
+            if data['gender'] not in ['M', 'F']:
+                return JsonResponse({'success': False, 'error': 'Gênero deve ser M ou F'}, status=400)
+            if data['size'] not in ['small', 'medium', 'large']:
+                return JsonResponse({'success': False, 'error': 'Porte deve ser small, medium ou large'}, status=400)
+            
             dog = Dog.objects.create(
-                name=data['name'],
-                age=int(data.get('age', 0)),
-                age_months=int(data.get('age_months', 0)),
+                name=data['name'].strip(),
+                age=age,
+                age_months=age_months,
                 gender=data['gender'],
                 size=data['size'],
-                breed=data.get('breed', ''),
-                photo_url=data.get('photo_url', ''),
-                description=data.get('description', ''),
-                personality=data.get('personality', ''),
-                special_needs=data.get('special_needs', ''),
+                breed=data.get('breed', '').strip(),
+                photo_url=data.get('photo_url', '').strip(),
+                description=data.get('description', '').strip(),
+                personality=data.get('personality', '').strip(),
+                special_needs=data.get('special_needs', '').strip(),
                 is_featured=data.get('is_featured', False)
             )
             return JsonResponse({'success': True, 'id': dog.id})
+        except ValueError as e:
+            return JsonResponse({'success': False, 'error': 'Dados inválidos: ' + str(e)}, status=400)
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            return JsonResponse({'success': False, 'error': 'Erro interno: ' + str(e)}, status=500)
 
 
 @require_http_methods(["POST"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_toggle_dog_featured(request, dog_id):
     """Toggle dog featured status"""
     try:
@@ -318,6 +397,7 @@ def api_toggle_dog_featured(request, dog_id):
 
 
 @require_http_methods(["GET"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_adoptions(request):
     """Adoptions API endpoint"""
     adoptions = AdoptionInquiry.objects.select_related('dog').order_by('-created_at')
@@ -342,10 +422,16 @@ def api_adoptions(request):
 
 @require_http_methods(["PATCH"])
 @csrf_exempt
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_update_adoption(request, adoption_id):
     """Update adoption status"""
     try:
         data = json.loads(request.body)
+        
+        # Validação de status
+        if data.get('status') not in ['pending', 'approved', 'rejected']:
+            return JsonResponse({'success': False, 'error': 'Status inválido'}, status=400)
+        
         adoption = get_object_or_404(AdoptionInquiry, id=adoption_id)
         adoption.status = data['status']
         adoption.save()
@@ -361,6 +447,7 @@ def api_update_adoption(request, adoption_id):
 
 
 @require_http_methods(["GET"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_volunteers(request):
     """Volunteers API endpoint"""
     volunteers = VolunteerApplication.objects.order_by('-created_at')
@@ -383,10 +470,16 @@ def api_volunteers(request):
 
 @require_http_methods(["PATCH"])
 @csrf_exempt
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_update_volunteer(request, volunteer_id):
     """Update volunteer status"""
     try:
         data = json.loads(request.body)
+        
+        # Validação de status
+        if data.get('status') not in ['pending', 'approved', 'rejected']:
+            return JsonResponse({'success': False, 'error': 'Status inválido'}, status=400)
+        
         volunteer = get_object_or_404(VolunteerApplication, id=volunteer_id)
         volunteer.status = data['status']
         volunteer.save()
@@ -396,6 +489,7 @@ def api_update_volunteer(request, volunteer_id):
 
 
 @require_http_methods(["GET"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_messages(request):
     """Messages API endpoint"""
     messages = ContactMessage.objects.order_by('-created_at')
@@ -430,6 +524,7 @@ def api_messages(request):
 
 
 @require_http_methods(["GET"])
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_testimonials(request):
     """Testimonials API endpoint"""
     testimonials = Testimonial.objects.order_by('-created_at')
@@ -448,6 +543,7 @@ def api_testimonials(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@user_passes_test(is_admin_user, login_url='admin_login')
 def api_toggle_testimonial(request, testimonial_id):
     """Toggle testimonial active status"""
     try:
