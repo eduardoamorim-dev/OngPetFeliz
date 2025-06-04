@@ -4,6 +4,10 @@ Django settings for dogs_rescue project.
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Carregar variáveis do arquivo .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,7 +65,7 @@ WSGI_APPLICATION = 'dogs_rescue.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('PGDATABASE', 'dogs_rescue'),
+        'NAME': os.environ.get('PGDATABASE', 'ong_petfeliz'),
         'USER': os.environ.get('PGUSER', 'postgres'),
         'PASSWORD': os.environ.get('PGPASSWORD', ''),
         'HOST': os.environ.get('PGHOST', 'localhost'),
