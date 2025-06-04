@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - ONG Resgate de Cães</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="flex min-h-screen">
+        <div class="bg-blue-800 text-white w-64 min-h-screen p-4">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-paw text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">ONG Gestão</h1>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="#dashboard" class="nav-item active flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-chart-pie mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#dogs" class="nav-item flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-dog mr-3"></i>
+                    Cães
+                </a>
+                <a href="#adoptions" class="nav-item flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-heart mr-3"></i>
+                    Adoções
+                </a>
+                <a href="#volunteers" class="nav-item flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-users mr-3"></i>
+                    Voluntários
+                </a>
+                <a href="#messages" class="nav-item flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-envelope mr-3"></i>
+                    Mensagens
+                </a>
+                <a href="#testimonials" class="nav-item flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-star mr-3"></i>
+                    Depoimentos
+                </a>
+            </nav>
+            
+            <div class="mt-auto pt-8">
+                <a href="/" class="flex items-center p-3 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-globe mr-3"></i>
+                    Ver Site
+                </a>
+                <a href="#logout" class="flex items-center p-3 rounded hover:bg-red-600 transition-colors mt-2">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    Sair
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b p-4">
+                <div class="flex justify-between items-center">
+                    <h2 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            Administrador
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-calendar mr-1"></i>
+                            <span id="current-date"></span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Stats Cards -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Total de Cães</p>
+                                    <p class="text-3xl font-bold text-blue-600" id="total-dogs">{{ dogs_count }}</p>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-full">
+                                    <i class="fas fa-dog text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Adoções Pendentes</p>
+                                    <p class="text-3xl font-bold text-orange-600" id="pending-adoptions">{{ pending_adoptions }}</p>
+                                </div>
+                                <div class="bg-orange-100 p-3 rounded-full">
+                                    <i class="fas fa-heart text-orange-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Voluntários Ativos</p>
+                                    <p class="text-3xl font-bold text-green-600" id="active-volunteers">{{ active_volunteers }}</p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-full">
+                                    <i class="fas fa-users text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Mensagens Não Lidas</p>
+                                    <p class="text-3xl font-bold text-red-600" id="unread-messages">{{ unread_messages }}</p>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-full">
+                                    <i class="fas fa-envelope text-red-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Adoções Recentes</h3>
+                            <div class="space-y-3" id="recent-adoptions">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Mensagens Urgentes</h3>
+                            <div class="space-y-3" id="urgent-messages">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dogs Section -->
+                <div id="dogs-section" class="section hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Gerenciar Cães</h3>
+                                <button id="add-dog-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Adicionar Cão
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div id="dogs-table" class="overflow-x-auto">
+                                <!-- Dogs table will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adoptions Section -->
+                <div id="adoptions-section" class="section hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold">Solicitações de Adoção</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="adoptions-table" class="overflow-x-auto">
+                                <!-- Adoptions table will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volunteers Section -->
+                <div id="volunteers-section" class="section hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold">Candidaturas de Voluntário</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="volunteers-table" class="overflow-x-auto">
+                                <!-- Volunteers table will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Section -->
+                <div id="messages-section" class="section hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold">Mensagens de Contato</h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="messages-table" class="overflow-x-auto">
+                                <!-- Messages table will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonials Section -->
+                <div id="testimonials-section" class="section hidden">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Depoimentos</h3>
+                                <button id="add-testimonial-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Adicionar Depoimento
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div id="testimonials-table" class="overflow-x-auto">
+                                <!-- Testimonials table will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Dog Modal -->
+    <div id="dog-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="dog-modal-title" class="text-lg font-semibold">Adicionar Cão</h3>
+                <button class="close-modal text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="dog-form">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nome</label>
+                        <input type="text" name="name" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Idade (anos)</label>
+                            <input type="number" name="age" min="0" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Meses</label>
+                            <input type="number" name="age_months" min="0" max="11" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Gênero</label>
+                            <select name="gender" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                                <option value="M">Macho</option>
+                                <option value="F">Fêmea</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Porte</label>
+                            <select name="size" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                                <option value="small">Pequeno</option>
+                                <option value="medium">Médio</option>
+                                <option value="large">Grande</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Raça</label>
+                        <input type="text" name="breed" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">URL da Foto</label>
+                        <input type="url" name="photo_url" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Descrição</label>
+                        <textarea name="description" rows="3" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Personalidade</label>
+                        <textarea name="personality" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Necessidades Especiais</label>
+                        <textarea name="special_needs" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="is_featured" class="mr-2">
+                        <label class="text-sm font-medium">Destacar na página principal</label>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" class="close-modal px-4 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-25 hidden items-center justify-center z-40">
+        <div class="bg-white rounded-lg p-4">
+            <div class="flex items-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                <span>Carregando...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin_dashboard.js"></script>
+</body>
+</html>
