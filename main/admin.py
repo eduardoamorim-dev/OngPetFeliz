@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Dog, Testimonial, AdoptionInquiry, VolunteerApplication, ContactMessage, Newsletter
+from .models import Dog, Testimonial, AdoptionInquiry, VolunteerApplication, ContactMessage
 
 
 @admin.register(Dog)
@@ -84,10 +84,4 @@ class ContactMessageAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
 
 
-@admin.register(Newsletter)
-class NewsletterAdmin(admin.ModelAdmin):
-    list_display = ['email', 'name', 'is_active', 'created_at']
-    list_filter = ['is_active', 'created_at']
-    search_fields = ['email', 'name']
-    list_editable = ['is_active']
-    readonly_fields = ['created_at']
+

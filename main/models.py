@@ -142,17 +142,4 @@ class ContactMessage(models.Model):
         return f"{self.name} - {self.subject}"
 
 
-class Newsletter(models.Model):
-    """Model for newsletter subscriptions"""
-    email = models.EmailField('Email', unique=True)
-    name = models.CharField('Nome', max_length=100, blank=True)
-    is_active = models.BooleanField('Ativo', default=True)
-    created_at = models.DateTimeField('Inscrito em', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Inscrição Newsletter'
-        verbose_name_plural = 'Inscrições Newsletter'
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return self.email
+

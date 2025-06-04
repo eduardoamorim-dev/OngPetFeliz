@@ -7,8 +7,8 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-from .models import Dog, Testimonial, AdoptionInquiry, VolunteerApplication, ContactMessage, Newsletter
-from .forms import AdoptionInquiryForm, VolunteerApplicationForm, ContactForm, NewsletterForm
+from .models import Dog, Testimonial, AdoptionInquiry, VolunteerApplication, ContactMessage
+from .forms import AdoptionInquiryForm, VolunteerApplicationForm, ContactForm
 
 
 def home(request):
@@ -36,7 +36,7 @@ def home(request):
         'adoption_form': AdoptionInquiryForm(),
         'volunteer_form': VolunteerApplicationForm(),
         'contact_form': ContactForm(),
-        'newsletter_form': NewsletterForm(),
+
     }
     
     return render(request, 'index.html', context)
