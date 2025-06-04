@@ -1,5 +1,5 @@
 from django import forms
-from .models import AdoptionInquiry, VolunteerApplication, ContactMessage, Newsletter
+from .models import AdoptionInquiry, VolunteerApplication, ContactMessage
 
 
 class AdoptionInquiryForm(forms.ModelForm):
@@ -129,21 +129,4 @@ class ContactForm(forms.ModelForm):
         }
 
 
-class NewsletterForm(forms.ModelForm):
-    class Meta:
-        model = Newsletter
-        fields = ['email', 'name']
-        widgets = {
-            'email': forms.EmailInput(attrs={
-                'class': 'flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Seu email'
-            }),
-            'name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Seu nome (opcional)'
-            }),
-        }
-        labels = {
-            'email': 'Email',
-            'name': 'Nome',
-        }
+

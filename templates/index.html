@@ -353,20 +353,7 @@
             </div>
         </div>
         
-        <!-- Newsletter -->
-        <div class="mt-16 bg-rescue-blue-900 rounded-lg p-8 text-center">
-            <h3 class="text-2xl font-bold mb-4">Receba Nossas Novidades</h3>
-            <p class="text-gray-300 mb-6">Inscreva-se em nossa newsletter e seja o primeiro a saber sobre novos resgates e oportunidades de adoção.</p>
-            <form method="post" action="{% url 'newsletter_subscription' %}" class="max-w-md mx-auto">
-                {% csrf_token %}
-                <div class="flex">
-                    {{ newsletter_form.email }}
-                    <button type="submit" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-6 py-2 rounded-r-lg font-semibold transition-colors">
-                        Inscrever
-                    </button>
-                </div>
-            </form>
-        </div>
+
     </div>
 </section>
 

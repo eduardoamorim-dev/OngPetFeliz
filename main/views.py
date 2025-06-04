@@ -139,30 +139,7 @@ def contact_message(request):
     return redirect('home')
 
 
-@require_http_methods(["POST"])
-def newsletter_subscription(request):
-    """Handle newsletter subscription"""
-    form = NewsletterForm(request.POST)
-    
-    if form.is_valid():
-        email = form.cleaned_data['email']
-        name = form.cleaned_data.get('name', '')
-        
-        newsletter, created = Newsletter.objects.get_or_create(
-            email=email,
-            defaults={'name': name}
-        )
-        
-        if created:
-            messages.success(request, 'Você foi inscrito em nossa newsletter com sucesso!')
-        else:
-            messages.info(request, 'Este email já está inscrito em nossa newsletter.')
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(request, f'Erro no campo {field}: {error}')
-    
-    return redirect('home')
+
 
 
 @require_http_methods(["POST"])
