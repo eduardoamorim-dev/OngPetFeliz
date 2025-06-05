@@ -14,7 +14,7 @@
                 Cada adoção é uma segunda chance para a felicidade.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style="animation-delay: 0.4s;">
-                <a href="#adocoes" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105">
+                <a href="/dogs/" class="bg-rescue-orange-500 hover:bg-rescue-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105">
                     <i class="fas fa-paw mr-2"></i>Veja nossos cães para adoção
                 </a>
                 <a href="#sobre" class="border-2 border-white hover:bg-white hover:text-rescue-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300">
@@ -58,9 +58,9 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-                <img src="https://pixabay.com/get/g7337ca00406f539bbcd04ab4dd995dfbf3eee2cacb21760529fedca213f1958747e7558fa69a11b4db4eeea7fd7df07bfec8c168e05ad0a965d78fadbc046698_1280.jpg" 
-                     alt="Voluntários com cães" 
-                     class="rounded-lg shadow-lg w-full h-96 object-cover">
+                <img src="https://images.unsplash.com/photo-1713352419538-18a691b8fd7b?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Voluntários com cães" 
+                    class="rounded-lg shadow-lg w-full h-96 object-cover">
             </div>
             <div>
                 <h3 class="text-2xl font-bold text-gray-800 mb-6">Nossa História</h3>
@@ -146,11 +146,24 @@
                     </div>
                 {% endfor %}
             </div>
+            
+            <!-- View All Dogs Button -->
+            <div class="text-center mt-12">
+                <a href="/dogs/" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-lg">
+                    <i class="fas fa-search mr-2"></i>
+                    Ver Todos os Cães Disponíveis
+                </a>
+                <p class="text-gray-600 mt-3 text-sm">Explore nossa galeria completa com filtros avançados</p>
+            </div>
         {% else %}
             <div class="text-center py-12">
                 <i class="fas fa-paw text-gray-400 text-6xl mb-4"></i>
                 <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum cão disponível no momento</h3>
-                <p class="text-gray-500">Novos amigos chegam em breve! Inscreva-se em nossa newsletter para ser notificado.</p>
+                <p class="text-gray-500 mb-6">Novos amigos chegam em breve! Inscreva-se em nossa newsletter para ser notificado.</p>
+                <a href="/dogs/" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                    <i class="fas fa-search mr-2"></i>
+                    Explorar Todos os Cães
+                </a>
             </div>
         {% endif %}
     </div>
@@ -363,7 +376,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Solicitação de Adoção</h3>
-                <button onclick="closeAdoptionModal()" class="text-gray-400 hover:text-gray-600">
+                <button onclick="closeAdoptionModal()" class="text-gray-400 hover:text-gray-600" title="Fechar Modal">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
@@ -446,7 +459,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Inscrição para Voluntário</h3>
-                <button onclick="closeVolunteerModal()" class="text-gray-400 hover:text-gray-600">
+                <button onclick="closeVolunteerModal()" class="text-gray-400 hover:text-gray-600" title="Fechar Modal">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>

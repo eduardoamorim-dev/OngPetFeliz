@@ -1,8 +1,31 @@
-// Admin Dashboard JavaScript
 class AdminDashboard {
     constructor() {
         this.currentSection = 'dashboard';
         this.init();
+    }
+
+    getCSRFToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (token) return token.value;
+        
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') return value;
+        }
+        return '';
+    }
+
+    async apiRequest(url, options = {}) {
+        const defaultOptions = {
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': this.getCSRFToken(),
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        return fetch(url, { ...defaultOptions, ...options });
     }
 
     init() {
@@ -24,153 +47,142 @@ class AdminDashboard {
     }
 
     setupModals() {
-        // Close modal buttons
-        document.querySelectorAll('.close-modal').forEach(btn => {
+        const closeButtons = document.querySelectorAll('.close-modal');
+        closeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 this.closeModals();
             });
         });
 
-        // Add dog button
-        document.getElementById('add-dog-btn')?.addEventListener('click', () => {
-            this.showDogModal();
-        });
+        const addDogBtn = document.getElementById('add-dog-btn');
+        if (addDogBtn) {
+            addDogBtn.addEventListener('click', () => {
+                this.showDogModal();
+            });
+        }
 
-        // Dog form submission
-        document.getElementById('dog-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveDog(e.target);
-        });
+        const dogForm = document.getElementById('dog-form');
+        if (dogForm) {
+            dogForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveDog(e.target);
+            });
+        }
+    }
 
-        // Click outside modal to close
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('bg-black')) {
-                this.closeModals();
-            }
-        });
+    updateCurrentDate() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            dateElement.textContent = now.toLocaleDateString('pt-BR', options);
+        }
     }
 
     showSection(section) {
-        // Update navigation
+        this.currentSection = section;
+        
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active', 'bg-blue-700');
+            item.classList.remove('bg-blue-700');
         });
-        document.querySelector(`[href="#${section}"]`).classList.add('active', 'bg-blue-700');
-
-        // Hide all sections
+        
+        const activeNav = document.querySelector('[href="#' + section + '"]');
+        if (activeNav) {
+            activeNav.classList.add('bg-blue-700');
+        }
+        
         document.querySelectorAll('.section').forEach(sec => {
             sec.classList.add('hidden');
         });
-
-        // Show target section
-        document.getElementById(`${section}-section`).classList.remove('hidden');
-
-        // Update page title
-        const titles = {
-            dashboard: 'Dashboard',
-            dogs: 'Gerenciar Cães',
-            adoptions: 'Solicitações de Adoção',
-            volunteers: 'Candidaturas de Voluntário',
-            messages: 'Mensagens de Contato',
-            testimonials: 'Depoimentos'
-        };
-        document.getElementById('page-title').textContent = titles[section];
-
-        this.currentSection = section;
-        this.loadSectionData(section);
-    }
-
-    async loadSectionData(section) {
-        this.showLoading();
         
-        try {
+        const sectionElement = document.getElementById(section + '-section');
+        if (sectionElement) {
+            sectionElement.classList.remove('hidden');
+            
             switch(section) {
                 case 'dashboard':
-                    await this.loadDashboardData();
+                    this.loadDashboardData();
                     break;
                 case 'dogs':
-                    await this.loadDogsData();
+                    this.loadDogsData();
                     break;
                 case 'adoptions':
-                    await this.loadAdoptionsData();
+                    this.loadAdoptionsData();
                     break;
                 case 'volunteers':
-                    await this.loadVolunteersData();
+                    this.loadVolunteersData();
                     break;
                 case 'messages':
-                    await this.loadMessagesData();
+                    this.loadMessagesData();
                     break;
                 case 'testimonials':
-                    await this.loadTestimonialsData();
+                    this.loadTestimonialsData();
                     break;
             }
-        } catch (error) {
-            this.showError('Erro ao carregar dados: ' + error.message);
-        } finally {
-            this.hideLoading();
         }
     }
 
     async loadDashboardData() {
         try {
-            const response = await fetch('/admin/api/dashboard/');
+            const response = await this.apiRequest('/gestao/api/dashboard/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const data = await response.json();
             
-            // Update stats
-            document.getElementById('total-dogs').textContent = data.total_dogs;
-            document.getElementById('pending-adoptions').textContent = data.pending_adoptions;
-            document.getElementById('active-volunteers').textContent = data.active_volunteers;
-            document.getElementById('unread-messages').textContent = data.unread_messages;
+            this.updateElement('total-dogs', data.total_dogs);
+            this.updateElement('pending-adoptions', data.pending_adoptions);
+            this.updateElement('active-volunteers', data.active_volunteers);
+            this.updateElement('unread-messages', data.unread_messages);
 
-            // Update recent adoptions
             this.renderRecentAdoptions(data.recent_adoptions);
             
-            // Update urgent messages
-            this.renderUrgentMessages(data.urgent_messages);
         } catch (error) {
-            console.error('Error loading dashboard:', error);
+            this.showError('Erro ao carregar dados do dashboard');
+        }
+    }
+
+    updateElement(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
         }
     }
 
     renderRecentAdoptions(adoptions) {
         const container = document.getElementById('recent-adoptions');
-        if (!adoptions.length) {
-            container.innerHTML = '<p class="text-gray-500 text-sm">Nenhuma adoção recente</p>';
+        if (!container) return;
+        
+        if (!adoptions || !adoptions.length) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhuma adoção recente</p>';
             return;
         }
 
-        container.innerHTML = adoptions.map(adoption => `
-            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-                <img src="${adoption.dog_photo}" alt="${adoption.dog_name}" 
-                     class="w-10 h-10 rounded-full object-cover mr-3">
-                <div class="flex-1">
-                    <p class="font-medium text-sm">${adoption.dog_name}</p>
-                    <p class="text-xs text-gray-500">${adoption.adopter_name}</p>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full ${this.getStatusClass(adoption.status)}">${this.getStatusText(adoption.status)}</span>
-            </div>
-        `).join('');
-    }
-
-    renderUrgentMessages(messages) {
-        const container = document.getElementById('urgent-messages');
-        if (!messages.length) {
-            container.innerHTML = '<p class="text-gray-500 text-sm">Nenhuma mensagem urgente</p>';
-            return;
-        }
-
-        container.innerHTML = messages.map(message => `
-            <div class="p-3 border-l-4 border-red-500 bg-red-50 rounded">
-                <p class="font-medium text-sm">${message.subject}</p>
-                <p class="text-xs text-gray-600">${message.name} • ${message.email}</p>
-                <p class="text-xs text-gray-500 mt-1">${this.formatDate(message.created_at)}</p>
-            </div>
-        `).join('');
+        let html = '';
+        adoptions.forEach(adoption => {
+            const date = new Date(adoption.created_at).toLocaleDateString('pt-BR');
+            html += '<div class="flex items-center justify-between p-3 bg-gray-50 rounded">';
+            html += '<div>';
+            html += '<p class="font-medium">' + adoption.dog_name + '</p>';
+            html += '<p class="text-sm text-gray-600">' + adoption.name + '</p>';
+            html += '</div>';
+            html += '<span class="text-xs text-gray-500">' + date + '</span>';
+            html += '</div>';
+        });
+        container.innerHTML = html;
     }
 
     async loadDogsData() {
         try {
-            const response = await fetch('/admin/api/dogs/');
+            const response = await this.apiRequest('/gestao/api/dogs/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const dogs = await response.json();
             this.renderDogsTable(dogs);
         } catch (error) {
@@ -180,60 +192,73 @@ class AdminDashboard {
 
     renderDogsTable(dogs) {
         const container = document.getElementById('dogs-table');
+        if (!container) return;
         
         if (!dogs.length) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhum cão cadastrado</p>';
             return;
         }
 
-        container.innerHTML = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cão</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Idade</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raça</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interesse</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${dogs.map(dog => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="${dog.photo_url || '/static/images/no-photo.png'}" alt="${dog.name}">
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">${dog.name}</div>
-                                        <div class="text-sm text-gray-500">${dog.gender === 'M' ? 'Macho' : 'Fêmea'} • ${this.getSizeText(dog.size)}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${this.formatAge(dog.age, dog.age_months)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dog.breed || '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getStatusClass(dog.status)}">
-                                    ${this.getStatusText(dog.status)}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dog.adoption_count || 0} solicitações</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button onclick="adminDashboard.editDog(${dog.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
-                                <button onclick="adminDashboard.toggleFeatured(${dog.id})" class="text-green-600 hover:text-green-900 mr-3">
-                                    ${dog.is_featured ? 'Remover Destaque' : 'Destacar'}
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        let html = '<table class="min-w-full bg-white">';
+        html += '<thead class="bg-gray-50">';
+        html += '<tr>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Foto</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Idade</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destaque</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Interessados</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="divide-y divide-gray-200">';
+        
+        dogs.forEach(dog => {
+            const photoUrl = dog.photo_url || '/static/images/no-photo.png';
+            const age = (dog.age > 0 ? dog.age + ' anos' : '') + (dog.age_months > 0 ? ' ' + dog.age_months + ' meses' : '');
+            
+            let statusClass = 'bg-blue-100 text-blue-800';
+            let statusText = 'Disponível';
+            if (dog.status === 'adopted') {
+                statusClass = 'bg-green-100 text-green-800';
+                statusText = 'Adotado';
+            } else if (dog.status === 'pending') {
+                statusClass = 'bg-yellow-100 text-yellow-800';
+                statusText = 'Pendente';
+            }
+            
+            html += '<tr>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<img class="h-10 w-10 rounded-full object-cover" src="' + photoUrl + '" alt="' + dog.name + '">';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + dog.name + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + age + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' + statusText + '</span>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">';
+            html += '<button onclick="dashboard.toggleDogFeatured(' + dog.id + ')" class="text-yellow-600 hover:text-yellow-900">';
+            html += dog.is_featured ? '⭐' : '☆';
+            html += '</button>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + dog.adoption_count + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">';
+            html += '<button onclick="dashboard.editDog(' + dog.id + ')" class="text-indigo-600 hover:text-indigo-900">Editar</button>';
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody>';
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     async loadAdoptionsData() {
         try {
-            const response = await fetch('/admin/api/adoptions/');
+            const response = await this.apiRequest('/gestao/api/adoptions/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const adoptions = await response.json();
             this.renderAdoptionsTable(adoptions);
         } catch (error) {
@@ -243,67 +268,76 @@ class AdminDashboard {
 
     renderAdoptionsTable(adoptions) {
         const container = document.getElementById('adoptions-table');
+        if (!container) return;
         
         if (!adoptions.length) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma solicitação de adoção</p>';
             return;
         }
 
-        container.innerHTML = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cão</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidato</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${adoptions.map(adoption => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <img class="h-8 w-8 rounded-full object-cover" src="${adoption.dog_photo}" alt="${adoption.dog_name}">
-                                    <div class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">${adoption.dog_name}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${adoption.name}</div>
-                                <div class="text-sm text-gray-500">${adoption.has_experience ? 'Tem experiência' : 'Sem experiência'}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">${adoption.email}</div>
-                                <div class="text-sm text-gray-500">${adoption.phone}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getStatusClass(adoption.status)}">
-                                    ${this.getStatusText(adoption.status)}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${this.formatDate(adoption.created_at)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                ${adoption.status === 'pending' ? `
-                                    <button onclick="adminDashboard.updateAdoptionStatus(${adoption.id}, 'approved')" 
-                                            class="text-green-600 hover:text-green-900 mr-3">Aprovar</button>
-                                    <button onclick="adminDashboard.updateAdoptionStatus(${adoption.id}, 'rejected')" 
-                                            class="text-red-600 hover:text-red-900">Rejeitar</button>
-                                ` : '-'}
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        let html = '<table class="min-w-full bg-white">';
+        html += '<thead class="bg-gray-50">';
+        html += '<tr>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cão</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="divide-y divide-gray-200">';
+        
+        adoptions.forEach(adoption => {
+            const date = new Date(adoption.created_at).toLocaleDateString('pt-BR');
+            
+            let statusClass = 'bg-yellow-100 text-yellow-800';
+            let statusText = 'Pendente';
+            if (adoption.status === 'approved') {
+                statusClass = 'bg-green-100 text-green-800';
+                statusText = 'Aprovado';
+            } else if (adoption.status === 'rejected') {
+                statusClass = 'bg-red-100 text-red-800';
+                statusText = 'Rejeitado';
+            }
+            
+            html += '<tr>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<div class="flex items-center">';
+            html += '<img class="h-8 w-8 rounded-full object-cover mr-2" src="' + adoption.dog_photo + '" alt="' + adoption.dog_name + '">';
+            html += '<span class="text-sm font-medium">' + adoption.dog_name + '</span>';
+            html += '</div>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + adoption.name + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + adoption.email + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' + statusText + '</span>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + date + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">';
+            
+            if (adoption.status === 'pending') {
+                html += '<button onclick="dashboard.updateAdoptionStatus(' + adoption.id + ', \'approved\')" class="text-green-600 hover:text-green-900 mr-2">Aprovar</button>';
+                html += '<button onclick="dashboard.updateAdoptionStatus(' + adoption.id + ', \'rejected\')" class="text-red-600 hover:text-red-900">Rejeitar</button>';
+            } else {
+                html += '-';
+            }
+            
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody>';
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     async loadVolunteersData() {
         try {
-            const response = await fetch('/admin/api/volunteers/');
+            const response = await this.apiRequest('/gestao/api/volunteers/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const volunteers = await response.json();
             this.renderVolunteersTable(volunteers);
         } catch (error) {
@@ -313,61 +347,68 @@ class AdminDashboard {
 
     renderVolunteersTable(volunteers) {
         const container = document.getElementById('volunteers-table');
+        if (!container) return;
         
         if (!volunteers.length) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma candidatura de voluntário</p>';
             return;
         }
 
-        container.innerHTML = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidato</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Idade</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disponibilidade</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${volunteers.map(volunteer => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${volunteer.name}</div>
-                                <div class="text-sm text-gray-500">${volunteer.email}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${volunteer.age} anos</td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs truncate">${volunteer.availability}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getStatusClass(volunteer.status)}">
-                                    ${this.getStatusText(volunteer.status)}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${this.formatDate(volunteer.created_at)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button onclick="adminDashboard.viewVolunteer(${volunteer.id})" 
-                                        class="text-indigo-600 hover:text-indigo-900 mr-3">Ver</button>
-                                ${volunteer.status === 'pending' ? `
-                                    <button onclick="adminDashboard.updateVolunteerStatus(${volunteer.id}, 'approved')" 
-                                            class="text-green-600 hover:text-green-900 mr-3">Aprovar</button>
-                                    <button onclick="adminDashboard.updateVolunteerStatus(${volunteer.id}, 'rejected')" 
-                                            class="text-red-600 hover:text-red-900">Rejeitar</button>
-                                ` : ''}
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        let html = '<table class="min-w-full bg-white">';
+        html += '<thead class="bg-gray-50">';
+        html += '<tr>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Idade</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="divide-y divide-gray-200">';
+        
+        volunteers.forEach(volunteer => {
+            const date = new Date(volunteer.created_at).toLocaleDateString('pt-BR');
+            
+            let statusClass = 'bg-yellow-100 text-yellow-800';
+            let statusText = 'Pendente';
+            if (volunteer.status === 'approved') {
+                statusClass = 'bg-green-100 text-green-800';
+                statusText = 'Aprovado';
+            } else if (volunteer.status === 'rejected') {
+                statusClass = 'bg-red-100 text-red-800';
+                statusText = 'Rejeitado';
+            }
+            
+            html += '<tr>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + volunteer.name + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + volunteer.email + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + volunteer.age + ' anos</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' + statusText + '</span>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + date + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">';
+            html += '<select onchange="dashboard.updateVolunteerStatus(' + volunteer.id + ', this.value)" class="text-sm border rounded px-2 py-1">';
+            html += '<option value="pending"' + (volunteer.status === 'pending' ? ' selected' : '') + '>Pendente</option>';
+            html += '<option value="approved"' + (volunteer.status === 'approved' ? ' selected' : '') + '>Aprovar</option>';
+            html += '<option value="rejected"' + (volunteer.status === 'rejected' ? ' selected' : '') + '>Rejeitar</option>';
+            html += '</select>';
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody>';
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     async loadMessagesData() {
         try {
-            const response = await fetch('/admin/api/messages/');
+            const response = await this.apiRequest('/gestao/api/messages/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const messages = await response.json();
             this.renderMessagesTable(messages);
         } catch (error) {
@@ -377,59 +418,49 @@ class AdminDashboard {
 
     renderMessagesTable(messages) {
         const container = document.getElementById('messages-table');
+        if (!container) return;
         
         if (!messages.length) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma mensagem</p>';
             return;
         }
 
-        container.innerHTML = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remetente</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assunto</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioridade</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${messages.map(message => `
-                        <tr class="${!message.is_read ? 'bg-blue-50' : ''}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${message.name}</div>
-                                <div class="text-sm text-gray-500">${message.email}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs truncate">${message.subject}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm ${this.getPriorityClass(message.priority)}">${this.getPriorityText(message.priority)}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${message.is_read ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                    ${message.is_read ? 'Lida' : 'Não Lida'}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${this.formatDate(message.created_at)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button onclick="adminDashboard.viewMessage(${message.id})" 
-                                        class="text-indigo-600 hover:text-indigo-900 mr-3">Ver</button>
-                                <a href="mailto:${message.email}?subject=Re: ${message.subject}" 
-                                   class="text-blue-600 hover:text-blue-900">Responder</a>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        let html = '<table class="min-w-full bg-white">';
+        html += '<thead class="bg-gray-50">';
+        html += '<tr>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assunto</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="divide-y divide-gray-200">';
+        
+        messages.forEach(message => {
+            const date = new Date(message.created_at).toLocaleDateString('pt-BR');
+            const rowClass = !message.is_read ? 'bg-blue-50' : '';
+            
+            html += '<tr class="' + rowClass + '">';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + message.name + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + message.email + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + message.subject + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + (message.is_read ? 'Lida' : 'Não lida') + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + date + '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody>';
+        html += '</table>';
+        container.innerHTML = html;
     }
 
     async loadTestimonialsData() {
         try {
-            const response = await fetch('/admin/api/testimonials/');
+            const response = await this.apiRequest('/gestao/api/testimonials/');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             const testimonials = await response.json();
             this.renderTestimonialsTable(testimonials);
         } catch (error) {
@@ -439,294 +470,155 @@ class AdminDashboard {
 
     renderTestimonialsTable(testimonials) {
         const container = document.getElementById('testimonials-table');
+        if (!container) return;
         
         if (!testimonials.length) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhum depoimento</p>';
             return;
         }
 
-        container.innerHTML = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adotante</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cão</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Depoimento</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${testimonials.map(testimonial => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${testimonial.adopter_name}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${testimonial.dog_name}</td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs truncate">${testimonial.testimonial}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${testimonial.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
-                                    ${testimonial.is_active ? 'Ativo' : 'Inativo'}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button onclick="adminDashboard.toggleTestimonial(${testimonial.id})" 
-                                        class="text-indigo-600 hover:text-indigo-900">
-                                    ${testimonial.is_active ? 'Desativar' : 'Ativar'}
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-    }
-
-    // Modal Methods
-    showDogModal(dogData = null) {
-        const modal = document.getElementById('dog-modal');
-        const form = document.getElementById('dog-form');
-        const title = document.getElementById('dog-modal-title');
+        let html = '<table class="min-w-full bg-white">';
+        html += '<thead class="bg-gray-50">';
+        html += '<tr>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adotante</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cão</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Depoimento</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody class="divide-y divide-gray-200">';
         
-        if (dogData) {
-            title.textContent = 'Editar Cão';
-            this.populateForm(form, dogData);
-        } else {
-            title.textContent = 'Adicionar Cão';
-            form.reset();
-        }
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    closeModals() {
-        document.querySelectorAll('[id$="-modal"]').forEach(modal => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-    }
-
-    // API Methods
-    async saveDog(form) {
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        data.is_featured = formData.has('is_featured');
-        
-        try {
-            this.showLoading();
-            const response = await fetch('/admin/api/dogs/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: JSON.stringify(data)
-            });
+        testimonials.forEach(testimonial => {
+            const date = new Date(testimonial.created_at).toLocaleDateString('pt-BR');
+            const statusClass = testimonial.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+            const statusText = testimonial.is_active ? 'Ativo' : 'Inativo';
+            const actionText = testimonial.is_active ? 'Desativar' : 'Ativar';
             
+            html += '<tr>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + testimonial.adopter_name + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + testimonial.dog_name + '</td>';
+            html += '<td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">' + testimonial.testimonial + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap">';
+            html += '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' + statusText + '</span>';
+            html += '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + date + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">';
+            html += '<button onclick="dashboard.toggleTestimonial(' + testimonial.id + ')" class="text-indigo-600 hover:text-indigo-900">' + actionText + '</button>';
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody>';
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    async saveDog(form) {
+        try {
+            const formData = new FormData(form);
+            const dogData = Object.fromEntries(formData.entries());
+            
+            const response = await this.apiRequest('/gestao/api/dogs/', {
+                method: 'POST',
+                body: JSON.stringify(dogData)
+            });
+
             if (response.ok) {
                 this.closeModals();
-                this.showSuccess('Cão salvo com sucesso!');
-                if (this.currentSection === 'dogs') {
-                    await this.loadDogsData();
-                }
+                this.loadDogsData();
+                this.showSuccess('Cão cadastrado com sucesso!');
             } else {
                 throw new Error('Erro ao salvar cão');
             }
         } catch (error) {
-            this.showError(error.message);
-        } finally {
-            this.hideLoading();
+            this.showError('Erro ao salvar cão');
         }
     }
 
     async updateAdoptionStatus(id, status) {
-        if (!confirm(`Confirmar ${status === 'approved' ? 'aprovação' : 'rejeição'} da adoção?`)) {
-            return;
-        }
-
         try {
-            this.showLoading();
-            const response = await fetch(`/admin/api/adoptions/${id}/`, {
+            const response = await this.apiRequest('/gestao/api/adoptions/' + id + '/', {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: JSON.stringify({ status })
+                body: JSON.stringify({ status: status })
             });
-            
+
             if (response.ok) {
+                this.loadAdoptionsData();
                 this.showSuccess('Status atualizado com sucesso!');
-                await this.loadAdoptionsData();
             } else {
                 throw new Error('Erro ao atualizar status');
             }
         } catch (error) {
-            this.showError(error.message);
-        } finally {
-            this.hideLoading();
+            this.showError('Erro ao atualizar status da adoção');
         }
     }
 
     async updateVolunteerStatus(id, status) {
-        if (!confirm(`Confirmar ${status === 'approved' ? 'aprovação' : 'rejeição'} do voluntário?`)) {
-            return;
-        }
-
         try {
-            this.showLoading();
-            const response = await fetch(`/admin/api/volunteers/${id}/`, {
+            const response = await this.apiRequest('/gestao/api/volunteers/' + id + '/', {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: JSON.stringify({ status })
+                body: JSON.stringify({ status: status })
             });
-            
+
             if (response.ok) {
+                this.loadVolunteersData();
                 this.showSuccess('Status atualizado com sucesso!');
-                await this.loadVolunteersData();
             } else {
                 throw new Error('Erro ao atualizar status');
             }
         } catch (error) {
-            this.showError(error.message);
-        } finally {
-            this.hideLoading();
+            this.showError('Erro ao atualizar status do voluntário');
         }
     }
 
-    async toggleFeatured(id) {
+    async toggleDogFeatured(id) {
         try {
-            this.showLoading();
-            const response = await fetch(`/admin/api/dogs/${id}/toggle-featured/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken()
-                }
+            const response = await this.apiRequest('/gestao/api/dogs/' + id + '/toggle-featured/', {
+                method: 'POST'
             });
-            
+
             if (response.ok) {
+                this.loadDogsData();
                 this.showSuccess('Status de destaque atualizado!');
-                await this.loadDogsData();
             } else {
                 throw new Error('Erro ao atualizar destaque');
             }
         } catch (error) {
-            this.showError(error.message);
-        } finally {
-            this.hideLoading();
+            this.showError('Erro ao atualizar destaque do cão');
         }
     }
 
     async toggleTestimonial(id) {
         try {
-            this.showLoading();
-            const response = await fetch(`/admin/api/testimonials/${id}/toggle/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken()
-                }
+            const response = await this.apiRequest('/gestao/api/testimonials/' + id + '/toggle/', {
+                method: 'POST'
             });
-            
+
             if (response.ok) {
+                this.loadTestimonialsData();
                 this.showSuccess('Status do depoimento atualizado!');
-                await this.loadTestimonialsData();
             } else {
                 throw new Error('Erro ao atualizar depoimento');
             }
         } catch (error) {
-            this.showError(error.message);
-        } finally {
-            this.hideLoading();
+            this.showError('Erro ao atualizar depoimento');
         }
     }
 
-    // Utility Methods
-    updateCurrentDate() {
-        const now = new Date();
-        const formatted = now.toLocaleDateString('pt-BR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+    showDogModal() {
+        const modal = document.getElementById('dog-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    closeModals() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.classList.add('hidden');
         });
-        document.getElementById('current-date').textContent = formatted;
-    }
-
-    getCSRFToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-               document.querySelector('meta[name=csrf-token]')?.content || '';
-    }
-
-    formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('pt-BR');
-    }
-
-    formatAge(years, months) {
-        if (years > 0) {
-            return months > 0 ? `${years}a ${months}m` : `${years} anos`;
-        }
-        return `${months} meses`;
-    }
-
-    getSizeText(size) {
-        const sizes = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
-        return sizes[size] || size;
-    }
-
-    getStatusClass(status) {
-        const classes = {
-            available: 'bg-green-100 text-green-800',
-            adopted: 'bg-blue-100 text-blue-800',
-            pending: 'bg-yellow-100 text-yellow-800',
-            approved: 'bg-green-100 text-green-800',
-            rejected: 'bg-red-100 text-red-800'
-        };
-        return classes[status] || 'bg-gray-100 text-gray-800';
-    }
-
-    getStatusText(status) {
-        const texts = {
-            available: 'Disponível',
-            adopted: 'Adotado',
-            pending: 'Pendente',
-            approved: 'Aprovado',
-            rejected: 'Rejeitado'
-        };
-        return texts[status] || status;
-    }
-
-    getPriorityClass(priority) {
-        const classes = {
-            high: 'text-red-600 font-bold',
-            medium: 'text-yellow-600 font-bold',
-            normal: 'text-green-600'
-        };
-        return classes[priority] || 'text-gray-600';
-    }
-
-    getPriorityText(priority) {
-        const texts = {
-            high: '🔴 Alta',
-            medium: '🟡 Média',
-            normal: '🟢 Normal'
-        };
-        return texts[priority] || 'Normal';
-    }
-
-    showLoading() {
-        document.getElementById('loading').classList.remove('hidden');
-        document.getElementById('loading').classList.add('flex');
-    }
-
-    hideLoading() {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('loading').classList.remove('flex');
     }
 
     showSuccess(message) {
@@ -738,36 +630,20 @@ class AdminDashboard {
     }
 
     showNotification(message, type) {
-        // Create notification element
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-            type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`;
+        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 text-white ' + bgColor;
         notification.textContent = message;
         
         document.body.appendChild(notification);
         
-        // Remove after 3 seconds
         setTimeout(() => {
             notification.remove();
         }, 3000);
     }
-
-    populateForm(form, data) {
-        Object.keys(data).forEach(key => {
-            const field = form.querySelector(`[name="${key}"]`);
-            if (field) {
-                if (field.type === 'checkbox') {
-                    field.checked = data[key];
-                } else {
-                    field.value = data[key];
-                }
-            }
-        });
-    }
 }
 
-// Initialize dashboard when DOM is loaded
+let dashboard;
 document.addEventListener('DOMContentLoaded', function() {
-    window.adminDashboard = new AdminDashboard();
+    dashboard = new AdminDashboard();
 });

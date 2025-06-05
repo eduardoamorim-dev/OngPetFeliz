@@ -87,6 +87,48 @@ def dog_detail(request, dog_id):
     return render(request, 'dog_detail.html', context)
 
 
+def dogs_list(request):
+    """Dogs listing page view - shows only featured dogs available for adoption"""
+    # Get total count of featured dogs available for adoption
+    total_dogs = Dog.objects.filter(status='available', is_featured=True).count()
+    
+    context = {
+        'total_dogs': total_dogs,
+    }
+    
+    return render(request, 'dogs_list.html', context)
+
+
+@require_http_methods(["GET"])
+def api_dogs_available(request):
+    """API endpoint for available featured dogs"""
+    # Only show featured dogs that are available for adoption
+    dogs = Dog.objects.filter(
+        status='available', 
+        is_featured=True
+    ).order_by('-created_at')
+    
+    data = []
+    for dog in dogs:
+        data.append({
+            'id': dog.id,
+            'name': dog.name,
+            'age': dog.age,
+            'age_months': dog.age_months,
+            'gender': dog.gender,
+            'size': dog.size,
+            'breed': dog.breed or '',
+            'photo_url': dog.photo_url or '',
+            'description': dog.description or '',
+            'personality': dog.personality or '',
+            'special_needs': dog.special_needs or '',
+            'is_featured': dog.is_featured,
+            'created_at': dog.created_at.isoformat()
+        })
+    
+    return JsonResponse(data, safe=False)
+
+
 @require_http_methods(["POST"])
 def volunteer_application(request):
     """Handle volunteer application form"""
@@ -240,7 +282,7 @@ def admin_logout(request):
 
 
 # Admin Dashboard Views
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def admin_dashboard(request):
     """Admin dashboard view"""
     # Get dashboard stats
@@ -261,7 +303,7 @@ def admin_dashboard(request):
 
 # API Views for Admin Dashboard
 @require_http_methods(["GET"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_dashboard(request):
     """Dashboard statistics API"""
     from django.db.models import Count
@@ -312,7 +354,7 @@ def api_dashboard(request):
 
 
 @require_http_methods(["GET", "POST"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_dogs(request):
     """Dogs API endpoint"""
     if request.method == 'GET':
@@ -384,7 +426,7 @@ def api_dogs(request):
 
 
 @require_http_methods(["POST"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_toggle_dog_featured(request, dog_id):
     """Toggle dog featured status"""
     try:
@@ -397,7 +439,7 @@ def api_toggle_dog_featured(request, dog_id):
 
 
 @require_http_methods(["GET"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_adoptions(request):
     """Adoptions API endpoint"""
     adoptions = AdoptionInquiry.objects.select_related('dog').order_by('-created_at')
@@ -422,7 +464,7 @@ def api_adoptions(request):
 
 @require_http_methods(["PATCH"])
 @csrf_exempt
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_update_adoption(request, adoption_id):
     """Update adoption status"""
     try:
@@ -447,7 +489,7 @@ def api_update_adoption(request, adoption_id):
 
 
 @require_http_methods(["GET"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_volunteers(request):
     """Volunteers API endpoint"""
     volunteers = VolunteerApplication.objects.order_by('-created_at')
@@ -470,7 +512,7 @@ def api_volunteers(request):
 
 @require_http_methods(["PATCH"])
 @csrf_exempt
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_update_volunteer(request, volunteer_id):
     """Update volunteer status"""
     try:
@@ -489,7 +531,7 @@ def api_update_volunteer(request, volunteer_id):
 
 
 @require_http_methods(["GET"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_messages(request):
     """Messages API endpoint"""
     messages = ContactMessage.objects.order_by('-created_at')
@@ -524,7 +566,7 @@ def api_messages(request):
 
 
 @require_http_methods(["GET"])
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_testimonials(request):
     """Testimonials API endpoint"""
     testimonials = Testimonial.objects.order_by('-created_at')
@@ -543,7 +585,7 @@ def api_testimonials(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
-@user_passes_test(is_admin_user, login_url='admin_login')
+@login_required
 def api_toggle_testimonial(request, testimonial_id):
     """Toggle testimonial active status"""
     try:

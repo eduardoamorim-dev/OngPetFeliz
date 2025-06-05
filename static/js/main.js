@@ -197,10 +197,10 @@ function addFormValidation() {
         });
     });
     
-    // Phone validation and formatting
+    // Phone validation only (no formatting)
     phoneInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            formatPhone(this);
+        input.addEventListener('blur', function() {
+            validatePhone(this);
         });
     });
 }
@@ -219,18 +219,17 @@ function validateEmail(input) {
     }
 }
 
-// Format phone number
-function formatPhone(input) {
-    let value = input.value.replace(/\D/g, '');
+// Validate phone number
+function validatePhone(input) {
+    const phone = input.value.replace(/\D/g, '');
     
-    if (value.length <= 11) {
-        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        value = value.replace(/(\d{2})(\d{4})/, '($1) $2');
-        value = value.replace(/(\d{2})/, '($1');
+    if (phone && (phone.length < 10 || phone.length > 11)) {
+        input.classList.add('border-red-500');
+        showFieldError(input, 'Telefone deve ter 10 ou 11 dígitos');
+    } else {
+        input.classList.remove('border-red-500');
+        hideFieldError(input);
     }
-    
-    input.value = value;
 }
 
 // Show field error
@@ -303,7 +302,7 @@ function initMessageAutoHide() {
                     }
                 }, 500);
             }
-        }, 5000); // Hide after 5 seconds
+        }, 5000); 
     });
 }
 

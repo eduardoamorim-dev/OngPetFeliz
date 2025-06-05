@@ -97,7 +97,7 @@
                 
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-rescue-blue-600 focus:outline-none focus:text-rescue-blue-600">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-rescue-blue-600 focus:outline-none focus:text-rescue-blue-600" title="Menu" aria-label="Menu">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -126,7 +126,7 @@
                 <div class="mb-2 p-4 rounded-lg shadow-lg {% if message.tags == 'success' %}bg-green-500 text-white{% elif message.tags == 'error' %}bg-red-500 text-white{% elif message.tags == 'info' %}bg-blue-500 text-white{% else %}bg-gray-500 text-white{% endif %} opacity-0 animate-fade-in">
                     <div class="flex items-center justify-between">
                         <span>{{ message }}</span>
-                        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200" title="Fechar" aria-label="Fechar">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>

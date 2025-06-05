@@ -3,13 +3,19 @@ from django.core.validators import RegexValidator
 from .models import AdoptionInquiry, VolunteerApplication, ContactMessage
 
 
+# Função para limpar telefone (remove formatação para salvar no banco)
+def clean_phone_number(phone):
+    """Remove formatação do telefone, mantendo apenas números"""
+    if phone:
+        return ''.join(filter(str.isdigit, phone))
+    return phone
+
+
 class AdoptionInquiryForm(forms.ModelForm):
-    phone_regex = RegexValidator(
-        regex=r'^\(\d{2}\)\s?\d{4,5}-?\d{4}$',
-        message="Telefone deve estar no formato (11) 99999-9999"
+    phone = forms.CharField(
+        max_length=15,
+        help_text="Formato: (11) 99999-9999"
     )
-    
-    phone = forms.CharField(validators=[phone_regex], max_length=15)
     
     class Meta:
         model = AdoptionInquiry
@@ -26,9 +32,10 @@ class AdoptionInquiryForm(forms.ModelForm):
                 'required': True
             }),
             'phone': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent',
                 'placeholder': '(11) 99999-9999',
-                'required': True
+                'required': True,
+                'maxlength': '15'
             }),
             'address': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
@@ -67,15 +74,21 @@ class AdoptionInquiryForm(forms.ModelForm):
         if name and len(name.split()) < 2:
             raise forms.ValidationError("Por favor, informe seu nome completo.")
         return name
-
+    
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            # Remove formatação para validar apenas números
+            numbers_only = clean_phone_number(phone)
+            if len(numbers_only) < 10 or len(numbers_only) > 11:
+                raise forms.ValidationError("Telefone deve ter 10 ou 11 dígitos.")
+        return phone
 
 class VolunteerApplicationForm(forms.ModelForm):
-    phone_regex = RegexValidator(
-        regex=r'^\(\d{2}\)\s?\d{4,5}-?\d{4}$',
-        message="Telefone deve estar no formato (11) 99999-9999"
+    phone = forms.CharField(
+        max_length=15,
+        help_text="Formato: (11) 99999-9999"
     )
-    
-    phone = forms.CharField(validators=[phone_regex], max_length=15)
     
     class Meta:
         model = VolunteerApplication
@@ -94,7 +107,8 @@ class VolunteerApplicationForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent',
                 'placeholder': '(11) 99999-9999',
-                'required': True
+                'required': True,
+                'maxlength': '15'
             }),
             'age': forms.NumberInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent',
@@ -142,6 +156,15 @@ class VolunteerApplicationForm(forms.ModelForm):
         if age and (age < 18 or age > 100):
             raise forms.ValidationError("Idade deve estar entre 18 e 100 anos.")
         return age
+    
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            # Remove formatação para validar apenas números
+            numbers_only = clean_phone_number(phone)
+            if len(numbers_only) < 10 or len(numbers_only) > 11:
+                raise forms.ValidationError("Telefone deve ter 10 ou 11 dígitos.")
+        return phone
 
 
 class ContactForm(forms.ModelForm):
@@ -189,6 +212,3 @@ class ContactForm(forms.ModelForm):
         if message and len(message) < 10:
             raise forms.ValidationError("Mensagem deve ter pelo menos 10 caracteres.")
         return message
-
-
-

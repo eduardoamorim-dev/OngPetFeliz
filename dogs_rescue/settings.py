@@ -112,3 +112,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Email settings (for contact forms)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'contato@ongresgatecaes.org'
+
+# Authentication settings
+LOGIN_URL = '/gestao/login/'
+LOGIN_REDIRECT_URL = '/gestao/'
+LOGOUT_REDIRECT_URL = '/'

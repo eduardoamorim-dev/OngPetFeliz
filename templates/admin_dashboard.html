@@ -236,7 +236,7 @@
         <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="dog-modal-title" class="text-lg font-semibold">Adicionar Cão</h3>
-                <button class="close-modal text-gray-500 hover:text-gray-700">
+                <button class="close-modal text-gray-500 hover:text-gray-700" title="Fechar">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -244,29 +244,29 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Nome</label>
-                        <input type="text" name="name" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                        <input type="text" name="name" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Nome do cão">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-1">Idade (anos)</label>
-                            <input type="number" name="age" min="0" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            <input type="number" name="age" min="0" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Idade do cão em anos">
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Meses</label>
-                            <input type="number" name="age_months" min="0" max="11" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            <input type="number" name="age_months" min="0" max="11" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Meses adicionais da idade do cão">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-1">Gênero</label>
-                            <select name="gender" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            <select name="gender" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Gênero do cão">
                                 <option value="M">Macho</option>
                                 <option value="F">Fêmea</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Porte</label>
-                            <select name="size" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            <select name="size" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Porte do cão">
                                 <option value="small">Pequeno</option>
                                 <option value="medium">Médio</option>
                                 <option value="large">Grande</option>
@@ -275,26 +275,26 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Raça</label>
-                        <input type="text" name="breed" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                        <input type="text" name="breed" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Raça do cão">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">URL da Foto</label>
-                        <input type="url" name="photo_url" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                        <input type="url" name="photo_url" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="URL da foto do cão">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Descrição</label>
-                        <textarea name="description" rows="3" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea name="description" rows="3" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Descrição do cão"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Personalidade</label>
-                        <textarea name="personality" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea name="personality" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Personalidade do cão"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Necessidades Especiais</label>
-                        <textarea name="special_needs" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea name="special_needs" rows="2" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Necessidades especiais do cão"></textarea>
                     </div>
                     <div class="flex items-center">
-                        <input type="checkbox" name="is_featured" class="mr-2">
+                        <input type="checkbox" name="is_featured" class="mr-2" title="Destacar na página principal">
                         <label class="text-sm font-medium">Destacar na página principal</label>
                     </div>
                 </div>
