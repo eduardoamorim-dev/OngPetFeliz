@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Cães para Adoção - ONG Resgate de Cães</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -18,7 +19,6 @@
         }
         .filter-badge {
             background: rgba(255, 255, 255, 0.2);
-            /* backdrop-filter: blur(10px); */
         }
     </style>
 </head>
@@ -71,8 +71,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
                     <select id="filter-gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" title="Filtrar por gênero">
                         <option value="">Todos</option>
-                        <option value="male">Macho</option>
-                        <option value="female">Fêmea</option>
+                        <option value="M">Macho</option>
+                        <option value="F">Fêmea</option>
                     </select>
                 </div>
 
@@ -81,9 +81,9 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Porte</label>
                     <select id="filter-size" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" title="Filtrar por porte">
                         <option value="">Todos</option>
-                        <option value="small">Pequeno</option>
-                        <option value="medium">Médio</option>
-                        <option value="large">Grande</option>
+                        <option value="P">Pequeno</option>
+                        <option value="M">Médio</option>
+                        <option value="G">Grande</option>
                     </select>
                 </div>
 
@@ -202,67 +202,61 @@
                         <!-- Dog info will be populated by JavaScript -->
                     </div>
                     
-                    <form id="adoption-form" method="post" action="/adoption/">
-                        {% csrf_token %}
-                        <input type="hidden" id="adoption-dog-id" name="dog_id" value="">
-                        
-                        <div class="mb-4">
-                            <label for="adoption-name" class="block text-sm font-medium text-gray-700 mb-2">Nome completo *</label>
-                            <input type="text" id="adoption-name" name="name" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="adoption-email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                            <input type="email" id="adoption-email" name="email" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="adoption-phone" class="block text-sm font-medium text-gray-700 mb-2">Telefone *</label>
-                            <input type="tel" id="adoption-phone" name="phone" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="adoption-address" class="block text-sm font-medium text-gray-700 mb-2">Endereço *</label>
-                            <textarea id="adoption-address" name="address" required rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tem experiência com cães? *</label>
-                            <div class="flex space-x-4">
-                                <label class="flex items-center">
-                                    <input type="radio" name="has_experience" value="true" class="mr-2" required>
-                                    <span>Sim</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="has_experience" value="false" class="mr-2" required>
-                                    <span>Não</span>
-                                </label>
+                    <form id="adoption-form">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="adoption-name" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                                <input type="text" id="adoption-name" name="name" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Seu nome completo">
+                            </div>
+                            
+                            <div>
+                                <label for="adoption-email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                <input type="email" id="adoption-email" name="email" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="seu@email.com">
+                            </div>
+                            
+                            <div>
+                                <label for="adoption-phone" class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
+                                <input type="tel" id="adoption-phone" name="phone" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="(11) 99999-9999">
+                            </div>
+                            
+                            <div>
+                                <label for="adoption-address" class="block text-sm font-medium text-gray-700 mb-1">Endereço *</label>
+                                <textarea id="adoption-address" name="address" required rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Endereço completo"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tem experiência com cães? *</label>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="adoption-experience" name="has_experience" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="adoption-experience" class="ml-2 text-sm text-gray-700">Sim, tenho experiência com cães</label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="adoption-living" class="block text-sm font-medium text-gray-700 mb-1">Situação de Moradia *</label>
+                                <textarea id="adoption-living" name="living_situation" required rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Descreva sua situação de moradia (casa, apartamento, quintal, etc.)"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label for="adoption-motivation" class="block text-sm font-medium text-gray-700 mb-1">Por que quer adotar? *</label>
+                                <textarea id="adoption-motivation" name="motivation" required rows="4"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Por que você quer adotar este cão?"></textarea>
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <label for="adoption-living" class="block text-sm font-medium text-gray-700 mb-2">Situação de moradia *</label>
-                            <select id="adoption-living" name="living_situation" required 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Selecione...</option>
-                                <option value="casa_com_quintal">Casa com quintal</option>
-                                <option value="casa_sem_quintal">Casa sem quintal</option>
-                                <option value="apartamento">Apartamento</option>
-                                <option value="sitio_fazenda">Sítio/Fazenda</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label for="adoption-motivation" class="block text-sm font-medium text-gray-700 mb-2">Por que deseja adotar este cão? *</label>
-                            <textarea id="adoption-motivation" name="motivation" required rows="4"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        
-                        <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex flex-col sm:flex-row gap-3 mt-6">
                             <button type="submit" 
                                     class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
                                 Enviar Solicitação
@@ -288,6 +282,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDogs();
             setupEventListeners();
+            setupAdoptionForm();
         });
 
         function setupEventListeners() {
@@ -306,6 +301,66 @@
                     closeModal();
                 }
             });
+
+            document.getElementById('adoption-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAdoptionModal();
+                }
+            });
+        }
+
+        function setupAdoptionForm() {
+            const adoptionForm = document.getElementById('adoption-form');
+            if (adoptionForm) {
+                adoptionForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData();
+                    const dogId = adoptionForm.dataset.dogId;
+                    
+                    // Add dog ID
+                    formData.append('dog_id', dogId);
+                    
+                    // Add form fields
+                    formData.append('name', document.getElementById('adoption-name').value);
+                    formData.append('email', document.getElementById('adoption-email').value);
+                    formData.append('phone', document.getElementById('adoption-phone').value);
+                    formData.append('address', document.getElementById('adoption-address').value);
+                    formData.append('has_experience', document.getElementById('adoption-experience').checked);
+                    formData.append('living_situation', document.getElementById('adoption-living').value);
+                    formData.append('motivation', document.getElementById('adoption-motivation').value);
+                    
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    
+                    try {
+                        const response = await fetch('/adoption/', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': csrfToken
+                            }
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                                closeAdoptionModal();
+                                showSuccessMessage('Sua solicitação de adoção foi enviada com sucesso! Entraremos em contato em breve.');
+                                adoptionForm.reset();
+                            } else {
+                                showErrorMessage('Erro ao enviar solicitação: ' + (result.message || 'Erro desconhecido'));
+                            }
+                        } else {
+                            showErrorMessage('Erro ao enviar solicitação. Tente novamente.');
+                        }
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        showErrorMessage('Erro ao enviar solicitação. Tente novamente.');
+                    }
+                });
+            }
         }
 
         async function loadDogs() {
@@ -318,7 +373,7 @@
                 filteredDogs = [...allDogs];
                 applyFilters();
             } catch (error) {
-                showError('Erro ao carregar a lista de cães. Tente novamente.');
+                showErrorMessage('Erro ao carregar a lista de cães. Tente novamente.');
             } finally {
                 hideLoading();
             }
@@ -615,10 +670,10 @@
 
         function showAdoptionForm(dogId) {
             closeModal();
-            openAdoptionModal(dogId, allDogs.find(d => d.id === dogId)?.name || 'este cão');
+            openAdoptionModal(dogId);
         }
 
-        function openAdoptionModal(dogId, dogName) {
+        function openAdoptionModal(dogId) {
             const dog = allDogs.find(d => d.id === dogId);
             if (!dog) return;
             
@@ -635,12 +690,12 @@
                 </div>
             `;
             
-            // Set dog ID in hidden field
-            document.getElementById('adoption-dog-id').value = dogId;
+            // Set dog ID in form dataset
+            const adoptionForm = document.getElementById('adoption-form');
+            adoptionForm.dataset.dogId = dogId;
             
             // Clear form
-            document.getElementById('adoption-form').reset();
-            document.getElementById('adoption-dog-id').value = dogId;
+            adoptionForm.reset();
             
             // Show modal
             document.getElementById('adoption-modal').classList.remove('hidden');
@@ -651,39 +706,6 @@
             document.getElementById('adoption-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
-
-        // Handle form submission
-        document.addEventListener('DOMContentLoaded', function() {
-            const adoptionForm = document.getElementById('adoption-form');
-            if (adoptionForm) {
-                adoptionForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    
-                    fetch('/adoption/', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            closeAdoptionModal();
-                            alert('Sua solicitação de adoção foi enviada com sucesso! Entraremos em contato em breve.');
-                            adoptionForm.reset();
-                        } else {
-                            alert('Erro ao enviar solicitação. Tente novamente.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro:', error);
-                        alert('Erro ao enviar solicitação. Tente novamente.');
-                    });
-                });
-            }
-        });
 
         // Utility functions
         function getAgeText(years, months) {
@@ -697,11 +719,11 @@
         }
 
         function getGenderText(gender) {
-            return gender === 'male' ? 'Macho' : 'Fêmea';
+            return gender === 'M' ? 'Macho' : 'Fêmea';
         }
 
         function getSizeText(size) {
-            const sizes = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
+            const sizes = { P: 'Pequeno', M: 'Médio', G: 'Grande' };
             return sizes[size] || size;
         }
 
@@ -737,8 +759,28 @@
             document.getElementById('no-results').classList.add('hidden');
         }
 
-        function showError(message) {
-            alert(message);
+        function showSuccessMessage(message) {
+            // Create a simple toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        function showErrorMessage(message) {
+            // Create a simple toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
         }
 
         function debounce(func, wait) {
