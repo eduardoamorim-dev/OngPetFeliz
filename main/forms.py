@@ -12,10 +12,7 @@ def clean_phone_number(phone):
 
 
 class AdoptionInquiryForm(forms.ModelForm):
-    phone = forms.CharField(
-        max_length=15,
-        help_text="Formato: (11) 99999-9999"
-    )
+    # Removido o campo phone explícito daqui para usar apenas o widget
     
     class Meta:
         model = AdoptionInquiry
@@ -32,7 +29,7 @@ class AdoptionInquiryForm(forms.ModelForm):
                 'required': True
             }),
             'phone': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent',
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                 'placeholder': '(11) 99999-9999',
                 'required': True,
                 'maxlength': '15'
@@ -68,6 +65,9 @@ class AdoptionInquiryForm(forms.ModelForm):
             'living_situation': 'Situação de Moradia',
             'motivation': 'Por que quer adotar?',
         }
+        help_texts = {
+            'phone': 'Formato: (11) 99999-9999'
+        }
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -84,11 +84,9 @@ class AdoptionInquiryForm(forms.ModelForm):
                 raise forms.ValidationError("Telefone deve ter 10 ou 11 dígitos.")
         return phone
 
+
 class VolunteerApplicationForm(forms.ModelForm):
-    phone = forms.CharField(
-        max_length=15,
-        help_text="Formato: (11) 99999-9999"
-    )
+    # Removido o campo phone explícito daqui também
     
     class Meta:
         model = VolunteerApplication
@@ -143,6 +141,9 @@ class VolunteerApplicationForm(forms.ModelForm):
             'availability': 'Disponibilidade',
             'skills': 'Habilidades/Experiência',
             'motivation': 'Motivação',
+        }
+        help_texts = {
+            'phone': 'Formato: (11) 99999-9999'
         }
     
     def clean_name(self):
