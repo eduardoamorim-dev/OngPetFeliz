@@ -1,2 +1,0 @@
-eduardoamorim
-@Morim7026
