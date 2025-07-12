@@ -356,7 +356,7 @@ def api_dashboard(request):
 @require_http_methods(["GET", "POST"])
 @login_required
 def api_dogs(request):
-    """Dogs API endpoint"""
+    """Dogs API endpoint - Versão corrigida"""
     if request.method == 'GET':
         dogs = Dog.objects.annotate(
             adoption_count=Count('adoptioninquiry')
@@ -383,46 +383,124 @@ def api_dogs(request):
         return JsonResponse(data, safe=False)
     
     elif request.method == 'POST':
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
-            data = json.loads(request.body)
+            # Log do corpo da requisição para debug
+            logger.info(f"Request body: {request.body}")
+            logger.info(f"Content type: {request.content_type}")
+            
+            # Verificar se o corpo não está vazio
+            if not request.body:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Dados não enviados'
+                }, status=400)
+            
+            # Parse do JSON
+            try:
+                data = json.loads(request.body)
+                logger.info(f"Parsed data: {data}")
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}")
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'JSON inválido: {str(e)}'
+                }, status=400)
             
             # Validação de campos obrigatórios
             required_fields = ['name', 'gender', 'size']
             for field in required_fields:
-                if not data.get(field):
-                    return JsonResponse({'success': False, 'error': f'Campo {field} é obrigatório'}, status=400)
+                if not data.get(field) or str(data.get(field)).strip() == '':
+                    return JsonResponse({
+                        'success': False, 
+                        'error': f'Campo {field} é obrigatório'
+                    }, status=400)
             
-            # Validação de tipos e valores
-            age = int(data.get('age', 0)) if data.get('age') else 0
-            age_months = int(data.get('age_months', 0)) if data.get('age_months') else 0
+            # Conversão e validação de idade - mais robusta
+            try:
+                age_raw = data.get('age', 0)
+                age = int(float(age_raw)) if age_raw not in [None, '', 'null'] else 0
+            except (ValueError, TypeError):
+                age = 0
             
+            try:
+                age_months_raw = data.get('age_months', 0)
+                age_months = int(float(age_months_raw)) if age_months_raw not in [None, '', 'null'] else 0
+            except (ValueError, TypeError):
+                age_months = 0
+            
+            # Validação de ranges
             if age < 0 or age > 25:
-                return JsonResponse({'success': False, 'error': 'Idade deve estar entre 0 e 25 anos'}, status=400)
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Idade deve estar entre 0 e 25 anos'
+                }, status=400)
+                
             if age_months < 0 or age_months > 11:
-                return JsonResponse({'success': False, 'error': 'Meses deve estar entre 0 e 11'}, status=400)
-            if data['gender'] not in ['M', 'F']:
-                return JsonResponse({'success': False, 'error': 'Gênero deve ser M ou F'}, status=400)
-            if data['size'] not in ['small', 'medium', 'large']:
-                return JsonResponse({'success': False, 'error': 'Porte deve ser small, medium ou large'}, status=400)
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Meses deve estar entre 0 e 11'
+                }, status=400)
             
+            # Validação de gender
+            gender = str(data.get('gender', '')).upper()
+            if gender not in ['M', 'F']:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Gênero deve ser M ou F'
+                }, status=400)
+            
+            # Validação de size
+            size = str(data.get('size', '')).lower()
+            if size not in ['small', 'medium', 'large']:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Porte deve ser small, medium ou large'
+                }, status=400)
+            
+            # Conversão de is_featured para boolean
+            is_featured_raw = data.get('is_featured', False)
+            if isinstance(is_featured_raw, str):
+                is_featured = is_featured_raw.lower() in ['true', '1', 'yes', 'on']
+            else:
+                is_featured = bool(is_featured_raw)
+            
+            # Sanitização de strings
+            def clean_string(value, max_length=None):
+                if value is None:
+                    return ''
+                cleaned = str(value).strip()
+                if max_length and len(cleaned) > max_length:
+                    cleaned = cleaned[:max_length]
+                return cleaned
+            
+            # Criação do objeto Dog
+            logger.info("Tentando criar objeto Dog...")
             dog = Dog.objects.create(
-                name=data['name'].strip(),
+                name=clean_string(data.get('name'), 100),
                 age=age,
                 age_months=age_months,
-                gender=data['gender'],
-                size=data['size'],
-                breed=data.get('breed', '').strip(),
-                photo_url=data.get('photo_url', '').strip(),
-                description=data.get('description', '').strip(),
-                personality=data.get('personality', '').strip(),
-                special_needs=data.get('special_needs', '').strip(),
-                is_featured=data.get('is_featured', False)
+                gender=gender,
+                size=size,
+                breed=clean_string(data.get('breed'), 100),
+                photo_url=clean_string(data.get('photo_url'), 500),
+                description=clean_string(data.get('description'), 1000),
+                personality=clean_string(data.get('personality'), 500),
+                special_needs=clean_string(data.get('special_needs'), 500),
+                is_featured=is_featured
             )
+            
+            logger.info(f"Cão criado com sucesso: ID {dog.id}")
             return JsonResponse({'success': True, 'id': dog.id})
-        except ValueError as e:
-            return JsonResponse({'success': False, 'error': 'Dados inválidos: ' + str(e)}, status=400)
+            
         except Exception as e:
-            return JsonResponse({'success': False, 'error': 'Erro interno: ' + str(e)}, status=500)
+            logger.error(f"Erro inesperado ao criar cão: {e}", exc_info=True)
+            return JsonResponse({
+                'success': False, 
+                'error': f'Erro interno do servidor: {str(e)}'
+            }, status=500)
 
 
 @require_http_methods(["POST"])

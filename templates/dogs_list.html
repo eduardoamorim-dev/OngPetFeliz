@@ -35,8 +35,6 @@
                 <div class="flex items-center space-x-8">
                     <a href="/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Início</a>
                     <a href="/dogs/" class="text-blue-600 px-3 py-2 rounded-md text-sm font-medium bg-blue-50">Cães para Adoção</a>
-                    <a href="/volunteer/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Seja Voluntário</a>
-                    <a href="/contact/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contato</a>
                 </div>
             </div>
         </div>
@@ -413,8 +411,8 @@
                 <div class="dog-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onclick="showDogModal(${dog.id})">
                     <div class="relative">
                         <img src="${dog.photo_url || '/static/images/no-photo.png'}" 
-                             alt="${dog.name}" 
-                             class="w-full h-48 object-cover">
+                            alt="${dog.name}" 
+                            class="w-full h-48 object-cover">
                         ${dog.is_featured ? '<div class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">⭐ Destaque</div>' : ''}
                         <div class="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
                             ${getAgeText(dog.age, dog.age_months)}
@@ -628,8 +626,8 @@
             document.getElementById('adoption-dog-info').innerHTML = `
                 <div class="flex items-center">
                     <img src="${dog.photo_url || '/static/images/no-photo.png'}" 
-                         alt="${dog.name}" 
-                         class="w-12 h-12 rounded-full object-cover mr-3">
+                        alt="${dog.name}" 
+                        class="w-12 h-12 rounded-full object-cover mr-3">
                     <div>
                         <h4 class="font-semibold text-gray-800">${dog.name}</h4>
                         <p class="text-sm text-gray-600">${getAgeText(dog.age, dog.age_months)} • ${getGenderText(dog.gender)} • ${getSizeText(dog.size)}</p>
