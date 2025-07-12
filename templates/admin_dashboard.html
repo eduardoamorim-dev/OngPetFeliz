@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Painel de Gestão - ONG Resgate de Cães</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -267,9 +268,9 @@
                         <div>
                             <label class="block text-sm font-medium mb-1">Porte</label>
                             <select name="size" required class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" title="Porte do cão">
-                                <option value="small">Pequeno</option>
-                                <option value="medium">Médio</option>
-                                <option value="large">Grande</option>
+                                <option value="s">Pequeno</option>
+                                <option value="m">Médio</option>
+                                <option value="l">Grande</option>
                             </select>
                         </div>
                     </div>
