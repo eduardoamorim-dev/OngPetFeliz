@@ -20,6 +20,7 @@ urlpatterns = [
     # API endpoints
     path('gestao/api/dashboard/', views.api_dashboard, name='api_dashboard'),
     path('gestao/api/dogs/', views.api_dogs, name='api_dogs'),
+    path('gestao/api/dogs/<int:dog_id>/', views.api_dogs, name='api_dogs_detail'),
     path('gestao/api/dogs/<int:dog_id>/toggle-featured/', views.api_toggle_dog_featured, name='api_toggle_dog_featured'),
     path('gestao/api/adoptions/', views.api_adoptions, name='api_adoptions'),
     path('gestao/api/adoptions/<int:adoption_id>/', views.api_update_adoption, name='api_update_adoption'),
