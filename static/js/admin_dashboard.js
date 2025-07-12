@@ -5,14 +5,32 @@ class AdminDashboard {
     }
 
     getCSRFToken() {
-        const token = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (token) return token.value;
+        // Método 1: Meta tag (novo)
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) {
+            const token = metaToken.getAttribute('content');
+            console.log('CSRF token do meta tag:', token);
+            return token;
+        }
         
+        // Método 2: Input hidden
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (token) {
+            console.log('CSRF token do input:', token.value);
+            return token.value;
+        }
+        
+        // Método 3: Cookie
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             const [name, value] = cookie.trim().split('=');
-            if (name === 'csrftoken') return value;
+            if (name === 'csrftoken') {
+                console.log('CSRF token do cookie:', value);
+                return value;
+            }
         }
+        
+        console.warn('CSRF token não encontrado!');
         return '';
     }
 
@@ -57,7 +75,7 @@ class AdminDashboard {
         const addDogBtn = document.getElementById('add-dog-btn');
         if (addDogBtn) {
             addDogBtn.addEventListener('click', () => {
-                this.showDogModal();
+                this.showDogModal(); // Call without parameters for new dog
             });
         }
 
@@ -66,6 +84,16 @@ class AdminDashboard {
             dogForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.saveDog(e.target);
+            });
+        }
+
+        // Fechar modal ao clicar no backdrop
+        const dogModal = document.getElementById('dog-modal');
+        if (dogModal) {
+            dogModal.addEventListener('click', (e) => {
+                if (e.target === dogModal) {
+                    this.closeModals();
+                }
             });
         }
     }
@@ -86,6 +114,20 @@ class AdminDashboard {
 
     showSection(section) {
         this.currentSection = section;
+        
+        // Update page title
+        const pageTitle = document.getElementById('page-title');
+        const titles = {
+            'dashboard': 'Dashboard',
+            'dogs': 'Gerenciar Cães',
+            'adoptions': 'Solicitações de Adoção',
+            'volunteers': 'Candidaturas de Voluntário',
+            'messages': 'Mensagens de Contato',
+            'testimonials': 'Depoimentos'
+        };
+        if (pageTitle) {
+            pageTitle.textContent = titles[section] || 'Dashboard';
+        }
         
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('bg-blue-700');
@@ -141,10 +183,34 @@ class AdminDashboard {
             this.updateElement('unread-messages', data.unread_messages);
 
             this.renderRecentAdoptions(data.recent_adoptions);
+            this.renderUrgentMessages(data.urgent_messages);
             
         } catch (error) {
             this.showError('Erro ao carregar dados do dashboard');
         }
+    }
+
+    renderUrgentMessages(messages) {
+        const container = document.getElementById('urgent-messages');
+        if (!container) return;
+        
+        if (!messages || !messages.length) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhuma mensagem urgente</p>';
+            return;
+        }
+
+        let html = '';
+        messages.forEach(message => {
+            const date = new Date(message.created_at).toLocaleDateString('pt-BR');
+            html += '<div class="flex items-center justify-between p-3 bg-red-50 rounded border-l-4 border-red-400">';
+            html += '<div>';
+            html += '<p class="font-medium text-red-800">' + message.subject + '</p>';
+            html += '<p class="text-sm text-red-600">' + message.name + '</p>';
+            html += '</div>';
+            html += '<span class="text-xs text-red-500">' + date + '</span>';
+            html += '</div>';
+        });
+        container.innerHTML = html;
     }
 
     updateElement(id, value) {
@@ -169,7 +235,7 @@ class AdminDashboard {
             html += '<div class="flex items-center justify-between p-3 bg-gray-50 rounded">';
             html += '<div>';
             html += '<p class="font-medium">' + adoption.dog_name + '</p>';
-            html += '<p class="text-sm text-gray-600">' + adoption.name + '</p>';
+            html += '<p class="text-sm text-gray-600">' + (adoption.adopter_name || adoption.name || 'Nome não informado') + '</p>';
             html += '</div>';
             html += '<span class="text-xs text-gray-500">' + date + '</span>';
             html += '</div>';
@@ -205,6 +271,7 @@ class AdminDashboard {
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Foto</th>';
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>';
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Idade</th>';
+        html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Porte</th>';
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>';
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destaque</th>';
         html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Interessados</th>';
@@ -215,8 +282,37 @@ class AdminDashboard {
         
         dogs.forEach(dog => {
             const photoUrl = dog.photo_url || '/static/images/no-photo.png';
-            const age = (dog.age > 0 ? dog.age + ' anos' : '') + (dog.age_months > 0 ? ' ' + dog.age_months + ' meses' : '');
             
+            // Formatar idade conforme o modelo Django
+            let age = '';
+            if (dog.age && dog.age > 0) {
+                age = dog.age + ' anos';
+                if (dog.age_months && dog.age_months > 0) {
+                    age += ' ' + dog.age_months + ' meses';
+                }
+            } else if (dog.age_months && dog.age_months > 0) {
+                age = dog.age_months + ' meses';
+            } else {
+                age = 'Idade não informada';
+            }
+            
+            // Converter tamanho conforme o modelo Django
+            let sizeText = dog.size;
+            switch(dog.size) {
+                case 'P':
+                    sizeText = 'Pequeno';
+                    break;
+                case 'M':
+                    sizeText = 'Médio';
+                    break;
+                case 'G':
+                    sizeText = 'Grande';
+                    break;
+                default:
+                    sizeText = dog.size || 'Não informado';
+            }
+            
+            // Status conforme o modelo Django
             let statusClass = 'bg-blue-100 text-blue-800';
             let statusText = 'Disponível';
             if (dog.status === 'adopted') {
@@ -224,7 +320,7 @@ class AdminDashboard {
                 statusText = 'Adotado';
             } else if (dog.status === 'pending') {
                 statusClass = 'bg-yellow-100 text-yellow-800';
-                statusText = 'Pendente';
+                statusText = 'Adoção Pendente';
             }
             
             html += '<tr>';
@@ -233,6 +329,7 @@ class AdminDashboard {
             html += '</td>';
             html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">' + dog.name + '</td>';
             html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + age + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + sizeText + '</td>';
             html += '<td class="px-6 py-4 whitespace-nowrap">';
             html += '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' + statusText + '</span>';
             html += '</td>';
@@ -241,7 +338,7 @@ class AdminDashboard {
             html += dog.is_featured ? '⭐' : '☆';
             html += '</button>';
             html += '</td>';
-            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + dog.adoption_count + '</td>';
+            html += '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">' + (dog.adoption_count || 0) + '</td>';
             html += '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">';
             html += '<button onclick="dashboard.editDog(' + dog.id + ')" class="text-indigo-600 hover:text-indigo-900">Editar</button>';
             html += '</td>';
@@ -291,6 +388,7 @@ class AdminDashboard {
         adoptions.forEach(adoption => {
             const date = new Date(adoption.created_at).toLocaleDateString('pt-BR');
             
+            // Status conforme o modelo Django
             let statusClass = 'bg-yellow-100 text-yellow-800';
             let statusText = 'Pendente';
             if (adoption.status === 'approved') {
@@ -304,7 +402,7 @@ class AdminDashboard {
             html += '<tr>';
             html += '<td class="px-6 py-4 whitespace-nowrap">';
             html += '<div class="flex items-center">';
-            html += '<img class="h-8 w-8 rounded-full object-cover mr-2" src="' + adoption.dog_photo + '" alt="' + adoption.dog_name + '">';
+            html += '<img class="h-8 w-8 rounded-full object-cover mr-2" src="' + (adoption.dog_photo || '/static/images/no-photo.png') + '" alt="' + adoption.dog_name + '">';
             html += '<span class="text-sm font-medium">' + adoption.dog_name + '</span>';
             html += '</div>';
             html += '</td>';
@@ -520,20 +618,68 @@ class AdminDashboard {
             const formData = new FormData(form);
             const dogData = Object.fromEntries(formData.entries());
             
-            const response = await this.apiRequest('/gestao/api/dogs/', {
-                method: 'POST',
+            // Check if we're editing or creating
+            const dogId = form.dataset.dogId;
+            const isEditing = !!dogId;
+            
+            // Converter valores para o formato esperado pelo modelo Django
+            if (dogData.size) {
+                switch(dogData.size) {
+                    case 'small':
+                        dogData.size = 'P';  // Pequeno
+                        break;
+                    case 'medium':
+                        dogData.size = 'M';  // Médio
+                        break;
+                    case 'large':
+                        dogData.size = 'G';  // Grande
+                        break;
+                }
+            }
+            
+            // Debug: verificar dados e token
+            console.log('Dados do cão (após conversão):', dogData);
+            console.log('Is editing:', isEditing);
+            console.log('Dog ID:', dogId);
+            console.log('CSRF Token:', this.getCSRFToken());
+            
+            const url = isEditing ? `/gestao/api/dogs/${dogId}/` : '/gestao/api/dogs/';
+            const method = isEditing ? 'PUT' : 'POST';
+            
+            const response = await this.apiRequest(url, {
+                method: method,
                 body: JSON.stringify(dogData)
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
             if (response.ok) {
+                const result = await response.json();
+                console.log('Resposta de sucesso:', result);
                 this.closeModals();
                 this.loadDogsData();
-                this.showSuccess('Cão cadastrado com sucesso!');
+                this.showSuccess(isEditing ? 'Cão atualizado com sucesso!' : 'Cão cadastrado com sucesso!');
             } else {
-                throw new Error('Erro ao salvar cão');
+                // Mostrar mais detalhes do erro
+                const errorText = await response.text();
+                console.error('Erro da API:', errorText);
+                console.error('Status completo:', response.status, response.statusText);
+                
+                if (response.status === 403) {
+                    this.showError('Acesso negado. Verifique se você está logado como administrador.');
+                } else if (response.status === 401) {
+                    this.showError('Você precisa fazer login como administrador.');
+                    window.location.href = '/gestao/login/';
+                } else if (response.status === 404) {
+                    this.showError('Endpoint não encontrado. Verifique se a URL está correta.');
+                } else {
+                    this.showError('Erro ao salvar cão: ' + response.status + ' - ' + errorText);
+                }
             }
         } catch (error) {
-            this.showError('Erro ao salvar cão');
+            console.error('Erro completo:', error);
+            this.showError('Erro ao salvar cão: ' + error.message);
         }
     }
 
@@ -607,18 +753,95 @@ class AdminDashboard {
         }
     }
 
-    showDogModal() {
+    showDogModal(dog = null) {
         const modal = document.getElementById('dog-modal');
-        if (modal) {
+        const modalTitle = document.getElementById('dog-modal-title');
+        const form = document.getElementById('dog-form');
+        
+        if (modal && form) {
+            // Reset form
+            form.reset();
+            
+            if (dog) {
+                // Editing existing dog
+                modalTitle.textContent = 'Editar Cão';
+                
+                // Fill form with dog data
+                form.name.value = dog.name || '';
+                form.age.value = dog.age || '';
+                form.age_months.value = dog.age_months || '';
+                form.gender.value = dog.gender || '';
+                
+                // Convert size back to form values
+                let sizeValue = '';
+                switch(dog.size) {
+                    case 'P':
+                        sizeValue = 'small';
+                        break;
+                    case 'M':
+                        sizeValue = 'medium';
+                        break;
+                    case 'G':
+                        sizeValue = 'large';
+                        break;
+                }
+                form.size.value = sizeValue;
+                
+                form.breed.value = dog.breed || '';
+                form.photo_url.value = dog.photo_url || '';
+                form.description.value = dog.description || '';
+                form.personality.value = dog.personality || '';
+                form.special_needs.value = dog.special_needs || '';
+                form.is_featured.checked = dog.is_featured || false;
+                
+                // Store dog ID for update
+                form.dataset.dogId = dog.id;
+            } else {
+                // Adding new dog
+                modalTitle.textContent = 'Adicionar Cão';
+                delete form.dataset.dogId;
+            }
+            
             modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    }
+
+    async editDog(dogId) {
+        try {
+            // First, get the dog data
+            const response = await this.apiRequest('/gestao/api/dogs/');
+            if (response.ok) {
+                const dogs = await response.json();
+                const dog = dogs.find(d => d.id === dogId);
+                
+                if (dog) {
+                    this.showDogModal(dog);
+                } else {
+                    this.showError('Cão não encontrado');
+                }
+            } else {
+                this.showError('Erro ao carregar dados do cão');
+            }
+        } catch (error) {
+            console.error('Erro ao editar cão:', error);
+            this.showError('Erro ao editar cão: ' + error.message);
         }
     }
 
     closeModals() {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            modal.classList.add('hidden');
-        });
+        // Corrigido: busca por ID específico ao invés de classe .modal
+        const dogModal = document.getElementById('dog-modal');
+        if (dogModal) {
+            dogModal.classList.add('hidden');
+            dogModal.classList.remove('flex');
+        }
+        
+        // Reset form se existir
+        const dogForm = document.getElementById('dog-form');
+        if (dogForm) {
+            dogForm.reset();
+        }
     }
 
     showSuccess(message) {
